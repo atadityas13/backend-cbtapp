@@ -1,58 +1,98 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# CBTApp Backend - Laravel 11 Version
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Repository backend modern berbasis **Laravel 11** untuk **CBTApp MTs Negeri 11 Majalengka**. Project ini menggantikan backend PHP native lama dengan sistem autentikasi **Multi-User (Admin & Proktor)** yang aman, handal, dan profesional.
 
-## About Laravel
+Sistem API dirancang **100% Backward Compatible** dengan format respons JSON lama sehingga aplikasi Android versi 6 (`4.2.3`) tetap berfungsi normal tanpa perubahan di sisi client.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## 🚀 Panduan Deployment di cPanel (Hosting)
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+Untuk melakukan deployment ke subdomain baru (misalnya `panelcbt.mtsn11majalengka.sch.id`), Anda dapat menggunakan Git langsung dari cPanel:
 
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
-
+### 1. Push Project ke GitHub Anda
+Inisialisasi Git lokal sudah dilakukan di folder ini. Anda tinggal mengaitkannya ke repository GitHub baru Anda:
 ```bash
-composer require laravel/boost --dev
+# Tambahkan origin repository GitHub Anda
+git remote add origin https://github.com/USERNAME/REPO-NAME.git
 
-php artisan boost:install
+# Push ke main/master branch
+git branch -M main
+git push -u origin main
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+### 2. Konfigurasi Subdomain di cPanel
+1. Masuk ke **cPanel** Anda.
+2. Buka menu **Subdomains** atau **Domains** -> **Create a New Domain**.
+3. Buat subdomain baru (misal: `panelcbt.mtsn11majalengka.sch.id`).
+4. **PENTING:** Atur **Document Root** subdomain tersebut ke `/public_html/panelcbt/public` (harus mengarah ke folder **public** di dalam project Laravel).
 
-## Contributing
+### 3. Clone / Pull Repository di cPanel
+1. Masuk ke terminal cPanel atau gunakan menu **Git™ Version Control** di cPanel.
+2. Clone repository Anda ke folder subdomain (misal: `/public_html/panelcbt`):
+   ```bash
+   git clone https://github.com/USERNAME/REPO-NAME.git /home/username/public_html/panelcbt
+   ```
+3. Jika sudah ada folder, masuk ke folder tersebut lalu lakukan pull:
+   ```bash
+   git pull origin main
+   ```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### 4. Instalasi Dependensi & Setup Environment
+Masuk ke terminal cPanel, navigasikan ke folder project, lalu jalankan perintah berikut:
+```bash
+# 1. Install dependensi composer (tanpa dev package untuk produksi)
+composer install --no-dev --optimize-autoloader
 
-## Code of Conduct
+# 2. Duplikat file .env.example menjadi .env
+cp .env.example .env
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+# 3. Generate Application Key
+php artisan key:generate
+```
 
-## Security Vulnerabilities
+### 5. Konfigurasi Database & Firebase
+1. Buka file `.env` di cPanel File Manager, lalu ubah konfigurasi database:
+   ```env
+   DB_CONNECTION=mysql
+   DB_HOST=127.0.0.1
+   DB_PORT=3306
+   DB_DATABASE=mtsnmaja_cbt_notifications
+   DB_USERNAME=mtsnmaja_user
+   DB_PASSWORD=password_anda
+   ```
+2. Jalankan migrasi database dan seeding data awal:
+   ```bash
+   php artisan migrate --seed
+   ```
+   *Perintah ini akan otomatis membuat tabel-tabel baru (`users`, `settings`, `cbt_pelanggaran`, `fcm_registrations`) dan mengisi akun Super Admin awal serta konfigurasi default.*
+   
+   **Akun Super Admin Awal:**
+   - **Username:** `admin`
+   - **Password:** `Admin021398` (Disarankan langsung diubah di halaman Pengaturan setelah masuk).
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+3. **Unggah file `service-account.json`** (kredensial Firebase Admin SDK Anda) ke root folder project (`/home/username/public_html/panelcbt/service-account.json`) agar fitur Push Notification Firebase dapat berfungsi normal.
 
-## License
+### 6. Optimasi Produksi
+Jalankan perintah optimasi berikut untuk mempercepat performa Laravel Anda di server:
+```bash
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+php artisan storage:link
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+---
+
+## 🔒 Fitur Unggulan & Hak Akses
+1. **Multi-User (Role-Based Access Control):**
+   - **Super Admin (`admin`):** Akses penuh ke seluruh menu, termasuk menambah/menghapus akun proktor lain dan mengubah pengaturan kritis seperti rentang waktu operasional ujian, waktu sesi, jenis asesmen aktif, serta iklan.
+   - **Proktor (`proktor`):** Akses ke halaman Ringkasan Dashboard, memantau daftar siswa terdaftar, melihat riwayat pelanggaran, melepaskan ban siswa (Pardon), serta mengirim notifikasi push manual ke siswa. Menu "Kelola Proktor" akan disembunyikan dan diproteksi otomatis di tingkat Controller & View.
+2. **Dynamic Configurations (`settings` table):**
+   Semua setelan dinamis (seperti status aktif Asesmen Sumatif/Madrasah, durasi tayang iklan, banner iklan) tersimpan di database dan dapat diubah secara real-time langsung melalui dashboard admin tanpa mengubah file konfigurasi JSON secara manual.
+3. **Painless Integration:**
+   Sistem rute API mempertahankan ekstensi `.php` (misal: `/api/notifikasi/simpan_token.php`) untuk memastikan aplikasi Android siswa tetap terhubung 100% dengan database baru.
+
+---
+
+*CBTApp Backend dikembangkan dengan dedikasi penuh untuk kemajuan digitalisasi pendidikan di MTs Negeri 11 Majalengka.*
