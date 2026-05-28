@@ -152,7 +152,15 @@
                                 <input type="checkbox" class="unban-check" value="{{ $violation->id }}" data-name="{{ addslashes($violation->student_name) }}" style="cursor: pointer;">
                             </td>
                         @endif
-                        <td style="font-weight: 600; color: #fff;">{{ $violation->student_name }}</td>
+                        <td style="font-weight: 600; color: #fff;">
+                            {{ $violation->student_name }}
+                            @if(isset($violation->total_bans) && $violation->total_bans > 1)
+                                <br>
+                                <span class="badge badge-warning" style="font-size: 0.7em; cursor: pointer; margin-top: 4px;" onclick="openHistoryModal({{ $violation->id }})">
+                                    <i class="bi bi-clock-history"></i> Riwayat Ban: {{ $violation->total_bans }}x
+                                </span>
+                            @endif
+                        </td>
                         <td>
                             <div style="font-weight: 600; color: var(--danger); margin-bottom: 4px;">
                                 {{ $violation->reason }}
@@ -271,6 +279,53 @@
             bulkBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Memproses...';
             return true;
         };
+
+        window.openHistoryModal = function (id) {
+            const modal = document.getElementById('modalHistory-' + id);
+            if (modal) modal.classList.add('active');
+        };
+
+        window.closeHistoryModal = function (id) {
+            const modal = document.getElementById('modalHistory-' + id);
+            if (modal) modal.classList.remove('active');
+        };
     });
 </script>
+
+@if($statusFilter === 'UNBANNED')
+    @foreach($violations as $violation)
+        @if(isset($violation->history) && count($violation->history) > 1)
+            <!-- Elegant Glassmorphic Modal for History -->
+            <div class="custom-modal" id="modalHistory-{{ $violation->id }}">
+                <div class="modal-content" style="max-width: 600px;">
+                    <button type="button" class="modal-close" onclick="closeHistoryModal({{ $violation->id }})"><i class="bi bi-x"></i></button>
+                    <h2 class="modal-title">
+                        <i class="bi bi-clock-history"></i>
+                        Riwayat Pelanggaran: {{ $violation->student_name }}
+                    </h2>
+                    
+                    <div style="max-height: 400px; overflow-y: auto; margin-top: 16px;">
+                        @foreach($violation->history as $index => $hist)
+                            <div style="background-color: rgba(7, 11, 19, 0.4); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 16px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+                                <div style="text-align: left;">
+                                    <div style="font-weight: 700; color: var(--danger); margin-bottom: 4px;">{{ $hist->reason }}</div>
+                                    <small style="color: var(--text-muted);"><i class="bi bi-calendar-event"></i> {{ $hist->created_at->format('d M Y, H:i') }} WIB</small>
+                                    @if($index === 0)
+                                        <span class="badge badge-success" style="font-size: 0.75em; margin-left: 8px;">Terbaru</span>
+                                    @endif
+                                </div>
+                                <div class="badge badge-danger">{{ $hist->duration_minutes }} Mnt</div>
+                            </div>
+                        @endforeach
+                    </div>
+                    
+                    <div style="display: flex; justify-content: flex-end; margin-top: 24px; gap: 12px;">
+                        <button type="button" class="btn btn-secondary" onclick="closeHistoryModal({{ $violation->id }})">Tutup</button>
+                    </div>
+                </div>
+            </div>
+        @endif
+    @endforeach
+@endif
+
 @endsection

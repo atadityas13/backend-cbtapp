@@ -13,6 +13,8 @@ class FcmRegistration extends Model
         'full_name',
         'topic',
         'android_id',
+        'device_model',
+        'android_version',
         'points',
         'alarm_muted_lifetime'
     ];
@@ -24,4 +26,9 @@ class FcmRegistration extends Model
  
     // Map legacy registration_timestamp column to CREATED_AT
     const CREATED_AT = 'registration_timestamp';
+
+    public function latestViolation()
+    {
+        return $this->hasOne(CbtPelanggaran::class, 'fcm_token', 'fcm_token')->latestOfMany();
+    }
 }

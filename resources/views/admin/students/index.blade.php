@@ -145,6 +145,7 @@
                     <th>Nama Siswa</th>
                     <th>Topik</th>
                     <th>Android ID</th>
+                    <th>Nama Device</th>
                     <th>FCM Token</th>
                     <th>Waktu Registrasi</th>
                     <th class="text-right">Aksi</th>
@@ -158,6 +159,19 @@
                             <span class="badge badge-success">{{ $student->topic }}</span>
                         </td>
                         <td style="font-family: monospace; font-size: 13px;">{{ $student->android_id }}</td>
+                        <td>
+                            @if(!empty($student->device_model))
+                                <div><i class="bi bi-phone"></i> {{ $student->device_model }}</div>
+                                @if(!empty($student->android_version))
+                                    <div style="font-size: 11px; color: var(--text-muted);">Android {{ $student->android_version }}</div>
+                                @endif
+                            @elseif($student->latestViolation)
+                                <div><i class="bi bi-phone"></i> {{ $student->latestViolation->device_model }}</div>
+                                <div style="font-size: 11px; color: var(--text-muted);">Android {{ $student->latestViolation->android_version }}</div>
+                            @else
+                                <span class="text-muted" style="font-style: italic; font-size: 12px;">Tidak diketahui</span>
+                            @endif
+                        </td>
                         <td>
                             <div class="token-preview" title="Klik untuk menyalin token lengkap" onclick="navigator.clipboard.writeText('{{ $student->fcm_token }}'); alert('Token disalin ke clipboard!');">
                                 {{ $student->fcm_token }}
@@ -184,7 +198,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="text-center" style="padding: 40px; color: var(--text-muted);">
+                        <td colspan="7" class="text-center" style="padding: 40px; color: var(--text-muted);">
                             <i class="bi bi-people" style="font-size: 32px; display: block; margin-bottom: 8px;"></i>
                             Tidak ada data perangkat siswa terdaftar.
                         </td>

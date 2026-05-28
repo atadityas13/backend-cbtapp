@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\FcmRegistration;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
 use Kreait\Firebase\Factory;
 use Kreait\Firebase\Messaging\CloudMessage;
 use Kreait\Firebase\Messaging\AndroidConfig;
@@ -16,6 +17,9 @@ class NotificationController extends Controller
 {
     public function index()
     {
+        // Jalankan sinkronisasi media dari legacy folder
+        $this->syncLegacyMedia();
+
         // Fetch all unique topics for dropdown
         $topics = FcmRegistration::distinct()->pluck('topic')->toArray();
         if (empty($topics)) {
@@ -28,8 +32,8 @@ class NotificationController extends Controller
         $laravelBase = public_path('uploads');
         
         $uploadedImageList = [];
-        if (\Illuminate\Support\Facades\File::exists($laravelBase)) {
-            $files = \Illuminate\Support\Facades\File::files($laravelBase);
+        if (File::exists($laravelBase)) {
+            $files = File::files($laravelBase);
             foreach ($files as $file) {
                 $ext = strtolower($file->getExtension());
                 if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
@@ -40,8 +44,8 @@ class NotificationController extends Controller
 
         $uploadedAudioList = [];
         $audioDir = $laravelBase . '/audio';
-        if (\Illuminate\Support\Facades\File::exists($audioDir)) {
-            $files = \Illuminate\Support\Facades\File::files($audioDir);
+        if (File::exists($audioDir)) {
+            $files = File::files($audioDir);
             foreach ($files as $file) {
                 if (strtolower($file->getExtension()) === 'mp3') {
                     $uploadedAudioList[] = $file->getFilename();
@@ -213,6 +217,50 @@ class NotificationController extends Controller
             return redirect()->back()->withInput()->with('error', 'Firebase Error: ' . $e->getMessage());
         } catch (\Exception $e) {
             return redirect()->back()->withInput()->with('error', 'Error: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Sync legacy media files by copying them to Laravel public path
+     */
+    private function syncLegacyMedia()
+    {
+        $legacyBase = base_path('../apkcbt.mtsn11majalengka.sch.id/administrator/uploads');
+        $laravelBase = public_path('uploads');
+        
+        if (!File::exists($laravelBase)) {
+            File::makeDirectory($laravelBase, 0777, true, true);
+        }
+        if (!File::exists($laravelBase . '/audio')) {
+            File::makeDirectory($laravelBase . '/audio', 0777, true, true);
+        }
+        
+        if (File::isDirectory($legacyBase)) {
+            // Salin Gambar dari folder legacy
+            $files = File::files($legacyBase);
+            foreach ($files as $file) {
+                $ext = strtolower($file->getExtension());
+                if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
+                    $dest = $laravelBase . '/' . $file->getFilename();
+                    if (!File::exists($dest)) {
+                        File::copy($file->getRealPath(), $dest);
+                    }
+                }
+            }
+            
+            // Salin Audio dari folder legacy
+            $legacyAudio = $legacyBase . '/audio';
+            if (File::isDirectory($legacyAudio)) {
+                $files = File::files($legacyAudio);
+                foreach ($files as $file) {
+                    if (strtolower($file->getExtension()) === 'mp3') {
+                        $dest = $laravelBase . '/audio/' . $file->getFilename();
+                        if (!File::exists($dest)) {
+                            File::copy($file->getRealPath(), $dest);
+                        }
+                    }
+                }
+            }
         }
     }
 }

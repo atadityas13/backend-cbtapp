@@ -16,21 +16,57 @@ class BanController extends Controller
         $search = $request->input('search');
         $statusFilter = $request->input('status', 'BANNED'); // Default focus on active BANNED
  
-        $query = CbtPelanggaran::query();
+        $query = CbtPelanggaran::query()
+            ->leftJoin('fcm_registrations', 'cbt_pelanggaran.fcm_token', '=', 'fcm_registrations.fcm_token')
+            ->select('cbt_pelanggaran.*', 'fcm_registrations.android_id');
  
         if (!empty($search)) {
             $query->where(function($q) use ($search) {
-                $q->where('student_name', 'like', "%{$search}%")
-                  ->orWhere('reason', 'like', "%{$search}%")
-                  ->orWhere('device_model', 'like', "%{$search}%");
+                $q->where('cbt_pelanggaran.student_name', 'like', "%{$search}%")
+                  ->orWhere('cbt_pelanggaran.reason', 'like', "%{$search}%")
+                  ->orWhere('cbt_pelanggaran.device_model', 'like', "%{$search}%");
             });
         }
  
         if ($statusFilter !== 'ALL') {
-            $query->where('status', $statusFilter);
+            $query->where('cbt_pelanggaran.status', $statusFilter);
         }
  
-        $violations = $query->orderBy('created_at', 'desc')->paginate(15);
+        if ($statusFilter === 'UNBANNED') {
+            $violationsData = $query->orderBy('cbt_pelanggaran.created_at', 'desc')->get();
+            
+            $grouped = [];
+            foreach ($violationsData as $row) {
+                // Grouping berdasarkan android_id perangkat, fallback ke student_name jika token tidak terdaftar
+                $identifier = $row->android_id ?: $row->student_name;
+                
+                if (!isset($grouped[$identifier])) {
+                    $grouped[$identifier] = $row;
+                    $grouped[$identifier]->total_bans = 0;
+                    $grouped[$identifier]->history = [];
+                }
+                
+                $grouped[$identifier]->total_bans++;
+                $grouped[$identifier]->history[] = $row;
+            }
+            
+            // Manual pagination untuk collection hasil grouping
+            $violationsCollection = collect(array_values($grouped));
+            
+            $currentPage = \Illuminate\Pagination\LengthAwarePaginator::resolveCurrentPage();
+            $perPage = 15;
+            $currentPageItems = $violationsCollection->slice(($currentPage - 1) * $perPage, $perPage)->all();
+            
+            $violations = new \Illuminate\Pagination\LengthAwarePaginator(
+                $currentPageItems,
+                $violationsCollection->count(),
+                $perPage,
+                $currentPage,
+                ['path' => \Illuminate\Pagination\LengthAwarePaginator::resolveCurrentPath()]
+            );
+        } else {
+            $violations = $query->orderBy('cbt_pelanggaran.created_at', 'desc')->paginate(15);
+        }
  
         return view('admin.violations.index', compact('violations', 'search', 'statusFilter'));
     }

@@ -19,6 +19,8 @@ class FcmController extends Controller
         $fullName = trim($request->input('full_name', ''));
         $androidId = trim($request->input('android_id', ''));
         $topic = $request->input('topic', 'cbt_notif');
+        $deviceModel = trim($request->input('device_model', ''));
+        $androidVersion = trim($request->input('android_version', ''));
  
         if (empty($fcmToken) || empty($fullName) || empty($androidId)) {
             return response()->json([
@@ -40,10 +42,17 @@ class FcmController extends Controller
             }
  
             // Jika nama sama, update token FCM (jika berubah akibat reinstall/clear data)
-            $existingDevice->update([
+            $updateData = [
                 'fcm_token' => $fcmToken,
                 'topic' => $topic
-            ]);
+            ];
+            if (!empty($deviceModel)) {
+                $updateData['device_model'] = $deviceModel;
+            }
+            if (!empty($androidVersion)) {
+                $updateData['android_version'] = $androidVersion;
+            }
+            $existingDevice->update($updateData);
  
             return response()->json([
                 'status' => 'success',
@@ -56,11 +65,18 @@ class FcmController extends Controller
         if ($legacyToken) {
             if (empty($legacyToken->android_id)) {
                 // Pasangkan Android ID secara sah jika rekor lama belum memilikinya
-                $legacyToken->update([
+                $updateData = [
                     'android_id' => $androidId,
                     'full_name' => $fullName,
                     'topic' => $topic
-                ]);
+                ];
+                if (!empty($deviceModel)) {
+                    $updateData['device_model'] = $deviceModel;
+                }
+                if (!empty($androidVersion)) {
+                    $updateData['android_version'] = $androidVersion;
+                }
+                $legacyToken->update($updateData);
  
                 return response()->json([
                     'status' => 'success',
@@ -75,7 +91,9 @@ class FcmController extends Controller
                 'fcm_token' => $fcmToken,
                 'full_name' => $fullName,
                 'android_id' => $androidId,
-                'topic' => $topic
+                'topic' => $topic,
+                'device_model' => !empty($deviceModel) ? $deviceModel : null,
+                'android_version' => !empty($androidVersion) ? $androidVersion : null
             ]);
  
             return response()->json([

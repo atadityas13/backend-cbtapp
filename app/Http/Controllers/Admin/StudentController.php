@@ -25,7 +25,7 @@ class StudentController extends Controller
             });
         }
  
-        $students = $query->orderBy('registration_timestamp', 'desc')->paginate(15);
+        $students = $query->with('latestViolation')->orderBy('registration_timestamp', 'desc')->paginate(15);
  
         return view('admin.students.index', compact('students', 'search'));
     }
