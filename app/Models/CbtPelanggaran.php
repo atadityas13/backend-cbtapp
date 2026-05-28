@@ -15,6 +15,12 @@ class CbtPelanggaran extends Model
         'duration_minutes',
         'device_model',
         'android_version',
-        'status'
+        'status',
+        'is_hard_lock'
+    ];
+
+    protected $casts = [
+        'is_hard_lock' => 'boolean',
+        'duration_minutes' => 'integer'
     ];
 }

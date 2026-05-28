@@ -107,9 +107,21 @@ class FcmController extends Controller
         $registration = FcmRegistration::where('android_id', $androidId)->first();
  
         if ($registration) {
+            // Cek apakah ada hukuman aktif berstatus BANNED untuk perangkat ini
+            $activeBan = CbtPelanggaran::where('fcm_token', $registration->fcm_token)
+                ->where('status', 'BANNED')
+                ->latest()
+                ->first();
+
             return response()->json([
                 'status' => 'registered',
-                'full_name' => $registration->full_name
+                'full_name' => $registration->full_name,
+                'points' => intval($registration->points ?? 10),
+                'alarm_muted_lifetime' => (bool)($registration->alarm_muted_lifetime ?? false),
+                'is_banned' => $activeBan ? true : false,
+                'is_hard_lock' => $activeBan ? (bool)($activeBan->is_hard_lock ?? false) : false,
+                'ban_reason' => $activeBan ? $activeBan->reason : null,
+                'ban_duration_minutes' => $activeBan ? intval($activeBan->duration_minutes) : null
             ]);
         }
  

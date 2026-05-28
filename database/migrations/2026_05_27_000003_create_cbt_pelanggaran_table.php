@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('device_model', 100)->nullable();
             $table->string('android_version', 20)->nullable();
             $table->enum('status', ['BANNED', 'UNBANNED'])->default('BANNED');
+            $table->boolean('is_hard_lock')->default(false);
             $table->timestamp('created_at')->nullable()->useCurrent();
             $table->timestamp('updated_at')->nullable()->useCurrentOnUpdate(); // Laravel timestamps mapping
         });
