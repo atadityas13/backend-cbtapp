@@ -51,30 +51,34 @@ class BanController extends Controller
         $fcmMessage = '';
 
         if (!empty($fcmToken)) {
-            $serviceAccountPath = base_path('service-account.json');
-            if (!file_exists($serviceAccountPath)) {
-                $legacyPath = base_path('../apkcbt.mtsn11majalengka.sch.id/administrator/service-account.json');
-                if (file_exists($legacyPath)) {
-                    $serviceAccountPath = $legacyPath;
-                }
-            }
-
-            if (file_exists($serviceAccountPath)) {
-                try {
-                    $factory = (new \Kreait\Firebase\Factory)->withServiceAccount($serviceAccountPath);
-                    $messaging = $factory->createMessaging();
-
-                    $message = \Kreait\Firebase\Messaging\CloudMessage::withTarget('token', $fcmToken)
-                        ->withData([
-                            'action' => 'UNBAN_STUDENT'
-                        ]);
-
-                    $messaging->send($message);
-                } catch (\Exception $e) {
-                    $fcmMessage = " (FCM gagal dikirim: " . $e->getMessage() . ")";
-                }
+            if (!class_exists('\Kreait\Firebase\Factory')) {
+                $fcmMessage = " (FCM tidak terkirim: Library Firebase PHP SDK belum terinstall di hosting. Silakan jalankan 'composer install' di terminal SSH hosting Anda)";
             } else {
-                $fcmMessage = " (FCM gagal: berkas service-account.json tidak ditemukan)";
+                $serviceAccountPath = base_path('service-account.json');
+                if (!file_exists($serviceAccountPath)) {
+                    $legacyPath = base_path('../apkcbt.mtsn11majalengka.sch.id/administrator/service-account.json');
+                    if (file_exists($legacyPath)) {
+                        $serviceAccountPath = $legacyPath;
+                    }
+                }
+
+                if (file_exists($serviceAccountPath)) {
+                    try {
+                        $factory = (new \Kreait\Firebase\Factory)->withServiceAccount($serviceAccountPath);
+                        $messaging = $factory->createMessaging();
+
+                        $message = \Kreait\Firebase\Messaging\CloudMessage::withTarget('token', $fcmToken)
+                            ->withData([
+                                'action' => 'UNBAN_STUDENT'
+                            ]);
+
+                        $messaging->send($message);
+                    } catch (\Throwable $e) {
+                        $fcmMessage = " (FCM gagal dikirim: " . $e->getMessage() . ")";
+                    }
+                } else {
+                    $fcmMessage = " (FCM gagal: berkas service-account.json tidak ditemukan)";
+                }
             }
         } else {
             $fcmMessage = " (FCM tidak dikirim karena Token FCM kosong)";
