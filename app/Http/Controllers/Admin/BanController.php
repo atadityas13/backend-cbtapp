@@ -67,10 +67,12 @@ class BanController extends Controller
                         $factory = (new \Kreait\Firebase\Factory)->withServiceAccount($serviceAccountPath);
                         $messaging = $factory->createMessaging();
 
-                        $message = \Kreait\Firebase\Messaging\CloudMessage::withTarget('token', $fcmToken)
-                            ->withData([
+                        $message = \Kreait\Firebase\Messaging\CloudMessage::fromArray([
+                            'token' => $fcmToken,
+                            'data' => [
                                 'action' => 'UNBAN_STUDENT'
-                            ]);
+                            ]
+                        ]);
 
                         $messaging->send($message);
                     } catch (\Throwable $e) {
