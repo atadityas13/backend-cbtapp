@@ -88,4 +88,79 @@ class BanController extends Controller
  
         return redirect()->route('admin.violations.index')->with('success', "Akses ujian siswa '{$violation->student_name}' berhasil dibuka kembali (Pardoned)." . $fcmMessage);
     }
+
+    /**
+     * Manually lift multiple student bans (Pardon)
+     */
+    public function bulkUnban(Request $request)
+    {
+        $idsString = $request->input('ids');
+        if (empty($idsString)) {
+            return redirect()->route('admin.violations.index')->with('error', 'Tidak ada siswa yang dipilih.');
+        }
+
+        $ids = explode(',', $idsString);
+        $violations = CbtPelanggaran::whereIn('id', $ids)->where('status', 'BANNED')->get();
+
+        if ($violations->isEmpty()) {
+            return redirect()->route('admin.violations.index')->with('error', 'Tidak ada data siswa terpilih yang berstatus BANNED.');
+        }
+
+        $serviceAccountPath = base_path('service-account.json');
+        if (!file_exists($serviceAccountPath)) {
+            $legacyPath = base_path('../apkcbt.mtsn11majalengka.sch.id/administrator/service-account.json');
+            if (file_exists($legacyPath)) {
+                $serviceAccountPath = $legacyPath;
+            }
+        }
+
+        $messaging = null;
+        $fcmInstalled = class_exists('\Kreait\Firebase\Factory');
+        if ($fcmInstalled && file_exists($serviceAccountPath)) {
+            try {
+                $factory = (new \Kreait\Firebase\Factory)->withServiceAccount($serviceAccountPath);
+                $messaging = $factory->createMessaging();
+            } catch (\Throwable $e) {
+                // Ignore initialization errors
+            }
+        }
+
+        $successCount = 0;
+        $fcmSuccessCount = 0;
+        $fcmFailCount = 0;
+
+        foreach ($violations as $violation) {
+            $violation->update([
+                'status' => 'UNBANNED'
+            ]);
+            $successCount++;
+
+            $fcmToken = $violation->fcm_token;
+            if (!empty($fcmToken) && $messaging) {
+                try {
+                    $message = \Kreait\Firebase\Messaging\CloudMessage::fromArray([
+                        'token' => $fcmToken,
+                        'data' => [
+                            'action' => 'UNBAN_STUDENT'
+                        ]
+                    ]);
+                    $messaging->send($message);
+                    $fcmSuccessCount++;
+                } catch (\Throwable $e) {
+                    $fcmFailCount++;
+                }
+            }
+        }
+
+        $fcmMessage = "";
+        if (!$fcmInstalled) {
+            $fcmMessage = " (FCM tidak terkirim: Library Firebase PHP SDK belum terinstall)";
+        } elseif (!file_exists($serviceAccountPath)) {
+            $fcmMessage = " (FCM tidak terkirim: berkas service-account.json tidak ditemukan)";
+        } else {
+            $fcmMessage = " (FCM terkirim: {$fcmSuccessCount} sukses" . ($fcmFailCount > 0 ? ", {$fcmFailCount} gagal" : "") . ")";
+        }
+
+        return redirect()->route('admin.violations.index')->with('success', "Akses ujian {$successCount} siswa berhasil dibuka kembali." . $fcmMessage);
+    }
 }

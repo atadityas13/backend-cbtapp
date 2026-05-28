@@ -106,12 +106,24 @@
             </a>
         </div>
 
-        <!-- Search input box -->
-        <form action="{{ route('admin.violations.index') }}" method="GET" class="search-box">
-            <input type="hidden" name="status" value="{{ $statusFilter }}">
-            <input type="text" name="search" value="{{ $search }}" class="form-control" placeholder="Cari nama siswa atau alasan...">
-            <i class="bi bi-search"></i>
-        </form>
+        <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+            @if($statusFilter === 'BANNED')
+                <form id="bulkUnbanForm" action="{{ route('admin.violations.bulk-unban') }}" method="POST" onsubmit="return confirmBulkUnban(event);">
+                    @csrf
+                    <input type="hidden" name="ids" id="bulkUnbanIds">
+                    <button type="submit" class="btn btn-warning btn-sm" id="bulkUnbanBtn" disabled style="background-color: var(--warning); color: #000; border: none; font-weight: 600; padding: 8px 16px; border-radius: var(--radius-md);">
+                        <i class="bi bi-unlock-fill me-1"></i> Buka Kunci Terpilih (<span id="selectedBanCount">0</span>)
+                    </button>
+                </form>
+            @endif
+
+            <!-- Search input box -->
+            <form action="{{ route('admin.violations.index') }}" method="GET" class="search-box">
+                <input type="hidden" name="status" value="{{ $statusFilter }}">
+                <input type="text" name="search" value="{{ $search }}" class="form-control" placeholder="Cari nama siswa atau alasan...">
+                <i class="bi bi-search"></i>
+            </form>
+        </div>
     </div>
 
     <!-- Responsive Violations Table -->
@@ -119,6 +131,11 @@
         <table class="table">
             <thead>
                 <tr>
+                    @if($statusFilter === 'BANNED')
+                        <th width="40" class="text-center">
+                            <input type="checkbox" id="selectAllBans" style="cursor: pointer;" title="Pilih Semua">
+                        </th>
+                    @endif
                     <th>Nama Siswa</th>
                     <th>Detail Pelanggaran (Keluar Aplikasi)</th>
                     <th>Spesifikasi Perangkat</th>
@@ -130,6 +147,11 @@
             <tbody>
                 @forelse($violations as $violation)
                     <tr>
+                        @if($statusFilter === 'BANNED')
+                            <td class="text-center">
+                                <input type="checkbox" class="unban-check" value="{{ $violation->id }}" data-name="{{ addslashes($violation->student_name) }}" style="cursor: pointer;">
+                            </td>
+                        @endif
                         <td style="font-weight: 600; color: #fff;">{{ $violation->student_name }}</td>
                         <td>
                             <div style="font-weight: 600; color: var(--danger); margin-bottom: 4px;">
@@ -170,7 +192,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="text-center" style="padding: 40px; color: var(--text-muted);">
+                        <td colspan="{{ $statusFilter === 'BANNED' ? 7 : 6 }}" class="text-center" style="padding: 40px; color: var(--text-muted);">
                             <i class="bi bi-emoji-sunglasses" style="font-size: 32px; display: block; margin-bottom: 8px;"></i>
                             Tidak ada data pelanggaran siswa yang terdaftar untuk kategori ini.
                         </td>
@@ -190,4 +212,65 @@
         </div>
     </div>
 </div>
+@endsection
+
+@section('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const selectAll = document.getElementById('selectAllBans');
+        const bulkBtn = document.getElementById('bulkUnbanBtn');
+        const countSpan = document.getElementById('selectedBanCount');
+        const bulkIdsInput = document.getElementById('bulkUnbanIds');
+        const checkboxes = document.querySelectorAll('.unban-check');
+
+        if (!bulkBtn) return;
+
+        function updateBulkUI() {
+            const checked = document.querySelectorAll('.unban-check:checked');
+            const selectedIds = Array.from(checked).map(cb => cb.value);
+            
+            if (countSpan) countSpan.textContent = checked.length;
+            bulkBtn.disabled = checked.length === 0;
+            bulkIdsInput.value = selectedIds.join(',');
+
+            if (selectAll) {
+                selectAll.checked = checked.length === checkboxes.length && checkboxes.length > 0;
+            }
+        }
+
+        if (selectAll) {
+            selectAll.addEventListener('change', function () {
+                checkboxes.forEach(cb => {
+                    cb.checked = selectAll.checked;
+                });
+                updateBulkUI();
+            });
+        }
+
+        checkboxes.forEach(cb => {
+            cb.addEventListener('change', updateBulkUI);
+        });
+
+        window.confirmBulkUnban = function (event) {
+            const checked = document.querySelectorAll('.unban-check:checked');
+            if (checked.length === 0) {
+                event.preventDefault();
+                return false;
+            }
+
+            const names = Array.from(checked).map(cb => cb.getAttribute('data-name'));
+            const confirmMsg = `Apakah Anda yakin ingin membuka blokir untuk ${checked.length} siswa berikut?\n\n` + names.join(', ') + `\n\nAplikasi di HP mereka akan otomatis terbuka.`;
+
+            if (!confirm(confirmMsg)) {
+                event.preventDefault();
+                return false;
+            }
+
+            // Disable button to prevent double submit
+            bulkBtn.disabled = true;
+            bulkBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Memproses...';
+            return true;
+        };
+    });
+</script>
 @endsection

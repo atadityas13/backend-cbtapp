@@ -226,17 +226,13 @@
                 <div class="form-group">
                     <label for="category" class="form-label">Kategori Pesan</label>
                     <select name="category" id="category" class="form-control">
-                        <option value="sumatif" selected>Asesmen Sumatif</option>
-                        <option value="madrasah">Asesmen Madrasah</option>
-                        <option value="pengumuman">Pengumuman Umum</option>
+                        <option value="normal" selected>Normal (Notifikasi Standar)</option>
+                        <option value="exam_alert">Exam Alert (Teks Berjalan)</option>
                     </select>
                 </div>
-                <div class="form-group">
-                    <label for="duration" class="form-label">Durasi Tampilan</label>
-                    <select name="duration" id="duration" class="form-control">
-                        <option value="normal" selected>Normal</option>
-                        <option value="sticky">Sticky (Tetap Tampil)</option>
-                    </select>
+                <div class="form-group" id="durationField" style="display: none;">
+                    <label for="duration" class="form-label">Durasi Teks Berjalan (Detik)</label>
+                    <input type="number" name="duration" id="duration" class="form-control" value="30" min="5" max="300">
                 </div>
             </div>
 
@@ -331,6 +327,19 @@
             }
             reader.readAsDataURL(input.files[0]);
         }
+    }
+
+    // Dynamic duration field toggle
+    const categorySelect = document.getElementById('category');
+    const durationField = document.getElementById('durationField');
+    if (categorySelect && durationField) {
+        categorySelect.addEventListener('change', function () {
+            if (this.value === 'exam_alert') {
+                durationField.style.display = 'block';
+            } else {
+                durationField.style.display = 'none';
+            }
+        });
     }
 </script>
 @endsection

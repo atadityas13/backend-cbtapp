@@ -591,6 +591,12 @@
                     <span>Kirim Notifikasi Push</span>
                 </a>
             </li>
+            <li class="sidebar-item {{ Route::is('admin.media.*') ? 'active' : '' }}">
+                <a href="{{ route('admin.media.index') }}">
+                    <i class="bi bi-file-earmark-music-fill"></i>
+                    <span>Manajemen File Media</span>
+                </a>
+            </li>
             <li class="sidebar-item {{ Route::is('admin.settings.*') ? 'active' : '' }}">
                 <a href="{{ route('admin.settings.index') }}">
                     <i class="bi bi-gear-fill"></i>

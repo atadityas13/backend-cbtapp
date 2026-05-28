@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\StudentController;
 use App\Http\Controllers\Admin\BanController;
 use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\SettingsController;
+use App\Http\Controllers\Admin\MediaController;
 use App\Http\Controllers\Web\LandingController;
 use Illuminate\Support\Facades\Route;
  
@@ -43,6 +44,11 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     // Manajemen Pelanggaran & Lepas Ban (Pardon)
     Route::get('/violations', [BanController::class, 'index'])->name('violations.index');
     Route::post('/violations/{id}/unban', [BanController::class, 'unban'])->name('violations.unban');
+    Route::post('/violations/bulk-unban', [BanController::class, 'bulkUnban'])->name('violations.bulk-unban');
+ 
+    // Manajemen File Media
+    Route::get('/media', [MediaController::class, 'index'])->name('media.index');
+    Route::post('/media/delete', [MediaController::class, 'destroy'])->name('media.destroy');
  
     // Pengiriman Notifikasi Push Manual (Firebase Cloud Messaging)
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');

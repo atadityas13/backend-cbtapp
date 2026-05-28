@@ -47,7 +47,7 @@ class NotificationController extends Controller
             'custom_sound'     => 'nullable|string',
             'jeda_pengiriman'  => 'nullable|integer|min:0',
             'category'         => 'required|string|max:50',
-            'duration'         => 'required|string|max:50',
+            'duration'         => 'nullable|integer|min:5|max:300',
         ]);
  
         $judul = $validated['judul'];
@@ -60,7 +60,7 @@ class NotificationController extends Controller
         $customSound = $validated['custom_sound'] ?? '';
         $jedaPengiriman = intval($validated['jeda_pengiriman'] ?? 0);
         $category = $validated['category'];
-        $duration = $validated['duration'];
+        $duration = strval($validated['duration'] ?? '30');
  
         // 1. Logika Upload Audio (Jika Ada)
         $soundUrl = '';
