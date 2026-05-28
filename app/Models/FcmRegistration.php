@@ -12,7 +12,14 @@ class FcmRegistration extends Model
         'fcm_token',
         'full_name',
         'topic',
-        'android_id'
+        'android_id',
+        'points',
+        'alarm_muted_lifetime'
+    ];
+ 
+    protected $casts = [
+        'points' => 'integer',
+        'alarm_muted_lifetime' => 'boolean'
     ];
  
     // Map legacy registration_timestamp column to CREATED_AT
