@@ -14,9 +14,6 @@ use Kreait\Firebase\Exception\Messaging\MessagingException;
  
 class NotificationController extends Controller
 {
-    /**
-     * Render the manual notification page
-     */
     public function index()
     {
         // Fetch all unique topics for dropdown
@@ -27,8 +24,32 @@ class NotificationController extends Controller
         
         // Fetch all students for specific token targeting
         $students = FcmRegistration::orderBy('full_name', 'asc')->get();
+
+        $laravelBase = public_path('uploads');
+        
+        $uploadedImageList = [];
+        if (\Illuminate\Support\Facades\File::exists($laravelBase)) {
+            $files = \Illuminate\Support\Facades\File::files($laravelBase);
+            foreach ($files as $file) {
+                $ext = strtolower($file->getExtension());
+                if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
+                    $uploadedImageList[] = $file->getFilename();
+                }
+            }
+        }
+
+        $uploadedAudioList = [];
+        $audioDir = $laravelBase . '/audio';
+        if (\Illuminate\Support\Facades\File::exists($audioDir)) {
+            $files = \Illuminate\Support\Facades\File::files($audioDir);
+            foreach ($files as $file) {
+                if (strtolower($file->getExtension()) === 'mp3') {
+                    $uploadedAudioList[] = $file->getFilename();
+                }
+            }
+        }
  
-        return view('admin.notifications.index', compact('topics', 'students'));
+        return view('admin.notifications.index', compact('topics', 'students', 'uploadedImageList', 'uploadedAudioList'));
     }
  
     /**
@@ -37,17 +58,17 @@ class NotificationController extends Controller
     public function send(Request $request)
     {
         $validated = $request->validate([
-            'judul'            => 'required|string|max:255',
-            'deskripsi'        => 'required|string',
-            'topik'            => 'nullable|string',
-            'fcm_token'        => 'nullable|string',
-            'gambar_url'       => 'nullable|string',
-            'link'             => 'nullable|string',
-            'prioritas'        => 'required|in:high,normal',
-            'custom_sound'     => 'nullable|string',
-            'jeda_pengiriman'  => 'nullable|integer|min:0',
-            'category'         => 'required|string|max:50',
-            'duration'         => 'nullable|integer|min:5|max:300',
+            'judul'               => 'required|string|max:255',
+            'deskripsi'           => 'required|string',
+            'topik'               => 'nullable|string',
+            'fcm_token'           => 'nullable|string',
+            'gambar_url'          => 'nullable|string',
+            'link'                => 'nullable|string',
+            'prioritas'           => 'required|in:high,normal',
+            'custom_sound'        => 'nullable|string',
+            'jeda_pengiriman'     => 'nullable|integer|min:0',
+            'category'            => 'required|string|max:50',
+            'duration'            => 'nullable|integer|min:5|max:300',
         ]);
  
         $judul = $validated['judul'];

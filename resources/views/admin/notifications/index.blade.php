@@ -180,22 +180,40 @@
             
             <div class="form-row">
                 <div class="form-group">
-                    <label for="gambar_url" class="form-label">URL Gambar Banner</label>
-                    <input type="text" name="gambar_url" id="gambar_url" class="form-control" placeholder="https://example.com/image.jpg" oninput="updatePreview()">
+                    <label for="gambar_url" class="form-label">Pilih Gambar (Hasil Upload)</label>
+                    <select name="gambar_url" id="gambar_url" class="form-control" onchange="updatePreview()">
+                        <option value="">-- Tanpa Gambar / Gunakan Upload Baru --</option>
+                        @foreach($uploadedImageList as $img)
+                            <option value="{{ asset('uploads/' . $img) }}">{{ $img }}</option>
+                        @endforeach
+                    </select>
                 </div>
                 <div class="form-group">
-                    <label for="gambar_file" class="form-label">Atau Unggah Gambar Lokal</label>
+                    <label for="gambar_file" class="form-label">Atau Unggah Gambar Baru</label>
                     <input type="file" name="gambar_file" id="gambar_file" class="form-control" accept="image/*" onchange="previewLocalImage(this)">
                 </div>
             </div>
 
             <div class="form-row">
                 <div class="form-group">
-                    <label for="custom_sound" class="form-label">Nama Sound Aplikasi (e.g. sirens)</label>
-                    <input type="text" name="custom_sound" id="custom_sound" class="form-control" placeholder="default">
+                    <label for="custom_sound" class="form-label">Pilih Suara / Sound Internal</label>
+                    <select name="custom_sound" id="custom_sound" class="form-control">
+                        <option value="">default</option>
+                        <optgroup label="Suara Bawaan Aplikasi">
+                            <option value="mulai_ujian">Mulai Ujian</option>
+                            <option value="belajar">Belajar</option>
+                        </optgroup>
+                        @if(!empty($uploadedAudioList))
+                            <optgroup label="Hasil Upload Sebelumnya">
+                                @foreach($uploadedAudioList as $audio)
+                                    <option value="{{ asset('uploads/audio/' . $audio) }}">{{ $audio }}</option>
+                                @endforeach
+                            </optgroup>
+                        @endif
+                    </select>
                 </div>
                 <div class="form-group">
-                    <label for="audio_file" class="form-label">Atau Unggah File Audio (.mp3)</label>
+                    <label for="audio_file" class="form-label">Atau Unggah File Suara Baru (.mp3)</label>
                     <input type="file" name="audio_file" id="audio_file" class="form-control" accept="audio/mpeg">
                 </div>
             </div>
@@ -305,13 +323,13 @@
     function updatePreview() {
         const titleInput = document.getElementById('judul').value;
         const descInput = document.getElementById('deskripsi').value;
-        const imageUrlInput = document.getElementById('gambar_url').value;
+        const imageUrlSelect = document.getElementById('gambar_url').value;
 
         previewTitle.textContent = titleInput.trim() !== '' ? titleInput : 'Judul Notifikasi Baru';
         previewDesc.textContent = descInput.trim() !== '' ? descInput : 'Deskripsi ringkas notifikasi yang dikirimkan oleh proktor akan muncul di sini.';
 
-        if (imageUrlInput.trim() !== '') {
-            previewImg.src = imageUrlInput;
+        if (imageUrlSelect.trim() !== '') {
+            previewImg.src = imageUrlSelect;
             previewImgContainer.style.display = 'block';
         } else {
             previewImgContainer.style.display = 'none';
