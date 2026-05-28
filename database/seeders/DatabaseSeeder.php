@@ -41,6 +41,11 @@ class DatabaseSeeder extends Seeder
             'ad_image'                => 'https://mtsn11majalengka.sch.id/unggahan/advert_sat2026.jpeg',
             'ad_author'               => 'Riyan Mardiyana, S.Pd.',
             'ad_time'                 => 3,
+            // ── Setting untuk endpoint /api/check_update (Android & Windows App) ──
+            'download_url'            => 'https://play.google.com/store/apps/details?id=com.mtsn11.cbtapp',
+            'latest_version'          => '4.2.3',
+            'release_notes'           => "Pembaruan Sistem v4.2.3:\n\n• Migrasi backend ke Laravel 11.\n• Web Audio API beep sintetik offline.\n• Perbaikan alur verifikasi keamanan.",
+            'force_update'            => false,
         ];
  
         foreach ($defaultSettings as $key => $value) {

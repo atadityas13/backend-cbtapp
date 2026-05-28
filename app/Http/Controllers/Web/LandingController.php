@@ -12,13 +12,18 @@ class LandingController extends Controller
      * Daftar User-Agent resmi yang diizinkan mengakses portal ujian.
      */
     private array $allowedUAs = [
-        'AdityAs13xCBTAppMTsN11Majalengka_V422', // Android v4.2.2
-        'AdityAs13xCBTAppMTsN11Majalengka_V423', // Android v4.2.3
+        'AdityAs13xCBTAppMTsN11Majalengka_V423', // Android v4.2.3 (TERBARU)
+        'AdityAs13xCBTAppMTsN11Majalengka_V422', // Android v4.2.2 (diizinkan agar muncul alert update)
         'AdityAs13xCBTAppMTsN11Majalengka',      // Versi lama (diizinkan masuk agar muncul alert update)
         'cbt-exam-browser',
         'CBTAppMTsN11Majalengka',
         'CBT-App-PC/1.0',
     ];
+
+    /**
+     * Header secret yang dikirim oleh WebView Android (ExamScreen.kt)
+     */
+    private const CBT_SECRET = 'AdityAs13_CBTApp_MTsN11Majalengka';
 
     /**
      * GET /
@@ -104,8 +109,9 @@ class LandingController extends Controller
         $userAgent     = $request->header('User-Agent', '');
         $downloadLink  = Setting::getValue('download_url', 'https://play.google.com/store/apps/details?id=com.mtsn11.cbtapp');
 
-        $isNewAndroidApp = str_contains($userAgent, 'AdityAs13xCBTAppMTsN11Majalengka_V422')
-                        || str_contains($userAgent, 'AdityAs13xCBTAppMTsN11Majalengka_V423');
+        // V423 adalah versi terbaru yang sah; V422 akan muncul alert update
+        $isNewAndroidApp = str_contains($userAgent, 'AdityAs13xCBTAppMTsN11Majalengka_V423')
+                        || str_contains($userAgent, 'AdityAs13xCBTAppMTsN11Majalengka_V422');
         $isDesktopVersion = str_contains($userAgent, 'CBT-App-PC/1.0');
 
         return view('web.verify_security', compact(
