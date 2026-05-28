@@ -15,8 +15,14 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
  
-// 1. Halaman Beranda (Landing Page & Uji User-Agent Siswa)
+// 1. Halaman Beranda (Gerbang Utama — Cek Operasional & User-Agent)
 Route::get('/', [LandingController::class, 'index'])->name('landing');
+
+// 1a. Terminal Verifikasi Keamanan (Retro CLI + Screen Pinning)
+Route::get('/verify-security', [LandingController::class, 'verifySecurity'])->name('verify-security');
+
+// 1b. Portal Pemilihan Akses Asesmen (Sumatif & Madrasah)
+Route::get('/portal', [LandingController::class, 'portal'])->name('portal');
  
 // 2. Autentikasi Admin & Proktor
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');

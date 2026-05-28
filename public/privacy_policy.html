@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kebijakan Privasi - CBT-App MTsN 11 Majalengka</title>
+    <style>
+        :root {
+            --primary-color: #016D32;
+            --secondary-color: #10B981;
+            --dark-color: #0F172A;
+            --light-color: #F8FAFC;
+            --border-color: #E2E8F0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: #334155;
+            background-color: var(--light-color);
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary-color), #064E3B);
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+            border-bottom: 4px solid var(--secondary-color);
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+        }
+
+        header p {
+            margin: 10px 0 0 0;
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        main {
+            max-width: 800px;
+            margin: 40px auto;
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+            border: 1px solid var(--border-color);
+        }
+
+        section {
+            margin-bottom: 30px;
+        }
+
+        h2 {
+            color: var(--primary-color);
+            font-size: 1.4rem;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 8px;
+            margin-top: 0;
+        }
+
+        p, li {
+            font-size: 1rem;
+            color: #475569;
+        }
+
+        ul {
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        .highlight {
+            background-color: #ECFDF5;
+            border-left: 4px solid var(--secondary-color);
+            padding: 15px;
+            border-radius: 0 8px 8px 0;
+            margin: 20px 0;
+        }
+
+        .highlight strong {
+            color: var(--primary-color);
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px 20px;
+            color: #64748B;
+            font-size: 0.9rem;
+            background-color: white;
+            border-top: 1px solid var(--border-color);
+        }
+
+        @media (max-width: 600px) {
+            main {
+                margin: 20px;
+                padding: 20px;
+            }
+            header h1 {
+                font-size: 1.6rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Kebijakan Privasi</h1>
+        <p>CBT-App MTsN 11 Majalengka</p>
+    </header>
+
+    <main>
+        <section>
+            <h2>1. Pendahuluan</h2>
+            <p>Selamat datang di Kebijakan Privasi <strong>CBT-App MTsN 11 Majalengka</strong> ("Aplikasi"). Kami berkomitmen untuk melindungi privasi siswa, guru, dan seluruh pengguna kami. Aplikasi ini dirancang dan dikembangkan oleh <strong>ATA DevLabs</strong> sebagai klien ujian berbasis komputer (Computer Based Test) resmi untuk MTsN 11 Majalengka.</p>
+            <p>Kebijakan Privasi ini menjelaskan jenis informasi yang kami kumpulkan, bagaimana informasi tersebut digunakan, serta langkah-langkah keamanan yang kami terapkan untuk menjaga keamanan data Anda.</p>
+        </section>
+
+        <section>
+            <h2>2. Informasi yang Kami Kumpulkan</h2>
+            <p>Untuk memastikan kelancaran, keamanan, dan integritas pelaksanaan ujian sekolah, Aplikasi mengumpulkan beberapa informasi berikut:</p>
+            <ul>
+                <li><strong>Nama Lengkap Siswa:</strong> Dikumpulkan saat pertama kali mendaftarkan perangkat guna mencocokkan identitas siswa dengan daftar peserta ujian resmi sekolah.</li>
+                <li><strong>Token Firebase Cloud Messaging (FCM):</strong> ID unik perangkat yang dihasilkan oleh layanan Firebase untuk memungkinkan pengiriman notifikasi pengumuman ujian, pesan proktor, dan sinkronisasi status ban secara real-time.</li>
+                <li><strong>Log Aktivitas Keamanan (Integritas Ujian):</strong> Aplikasi mencatat aktivitas sistem seperti tindakan melepas kunci layar (unpinning), deteksi mode layar belah (split-screen), deteksi penggunaan aplikasi melayang (overlay), dan pembersihan riwayat salin teks (clipboard) untuk mencegah kecurangan.</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>3. Penggunaan Izin Sensitif (Sensitive Permissions)</h2>
+            <p>Aplikasi ini memerlukan akses ke beberapa izin sistem Android khusus demi menjaga keamanan lingkungan ujian:</p>
+            
+            <div class="highlight">
+                <strong>📷 Izin Kamera (CAMERA):</strong>
+                <p style="margin: 5px 0 0 0;">Digunakan secara eksklusif untuk fitur pemindaian kode QR (QR Code Scan) guna memverifikasi kartu ujian dan masuk ke ruang ujian virtual. Aplikasi tidak mengambil foto, merekam video, ataupun menyimpan gambar Anda secara permanen. Pemrosesan gambar QR Code dilakukan secara instan di dalam perangkat.</p>
+            </div>
+
+            <div class="highlight">
+                <strong>🔔 Izin Notifikasi (POST_NOTIFICATIONS):</strong>
+                <p style="margin: 5px 0 0 0;">Diperlukan (terutama pada Android 13 ke atas) untuk menerima siaran pesan mendesak dari pengawas ruangan, pemberitahuan waktu ujian habis, serta alarm peringatan pelanggaran tata tertib ujian.</p>
+            </div>
+
+            <div class="highlight">
+                <strong>🛡️ Izin Keamanan Sistem (HIDE_OVERLAY_WINDOWS & REORDER_TASKS):</strong>
+                <p style="margin: 5px 0 0 0;">Digunakan untuk mencegah siswa membuka aplikasi lain di atas layar soal ujian (anti-kunci/kiosk mode) guna meminimalkan peluang membuka kunci jawaban atau berkomunikasi di luar aplikasi selama ujian berlangsung.</p>
+            </div>
+        </section>
+
+        <section>
+            <h2>4. Penyimpanan dan Keamanan Data</h2>
+            <p>Seluruh data yang dikumpulkan (Nama, Token FCM, dan Log Pelanggaran) dikirim secara aman menggunakan enkripsi protokol <strong>HTTPS</strong> langsung ke server internal sekolah MTsN 11 Majalengka (`https://apkcbt.mtsn11majalengka.sch.id`).</p>
+            <p>Kami tidak menjual, menyewakan, membagikan, atau memperdagangkan data pribadi pengguna kepada pihak ketiga atau platform pengiklan mana pun. Akses data log ujian sepenuhnya dikontrol secara terbatas oleh tim Proktor dan Administrator Ujian MTsN 11 Majalengka.</p>
+        </section>
+
+        <section>
+            <h2>5. Hak Pengguna</h2>
+            <p>Sebagai pengguna (siswa/orang tua murid), Anda memiliki hak untuk:</p>
+            <ul>
+                <li>Mengonfirmasi keberadaan data pendaftaran Anda pada server ujian sekolah.</li>
+                <li>Meminta penghapusan data pendaftaran nama dan token dari basis data server setelah siswa menyelesaikan masa studi atau masa ujian sekolah berakhir dengan menghubungi pihak administrator IT MTsN 11 Majalengka.</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>6. Perubahan Kebijakan Privasi</h2>
+            <p>Kami dapat memperbarui Kebijakan Privasi ini dari waktu ke waktu untuk menyesuaikan dengan aturan Google Play Store atau pembaruan sistem ujian sekolah. Perubahan akan diumumkan secara berkala melalui pembaruan aplikasi di Play Store atau melalui pengumuman resmi sekolah.</p>
+        </section>
+
+        <section>
+            <h2>7. Hubungi Kami</h2>
+            <p>Jika Anda memiliki pertanyaan mengenai Kebijakan Privasi ini atau operasional Aplikasi, silakan hubungi kami di:</p>
+            <p>
+                <strong>MTsN 11 Majalengka</strong><br>
+                Situs Web: <a href="https://mtsn11majalengka.sch.id" target="_blank" style="color: var(--primary-color);">mtsn11majalengka.sch.id</a><br>
+                Pengembang Resmi: <strong>ATA DevLabs</strong>
+            </p>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 ATA DevLabs & MTsN 11 Majalengka. Hak Cipta Dilindungi.</p>
+    </footer>
+
+</body>
+</html>
