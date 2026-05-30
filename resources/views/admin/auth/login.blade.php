@@ -281,9 +281,9 @@
                 @csrf
                 
                 <div class="form-group">
-                    <label for="username" class="form-label">Username atau Email</label>
+                    <label for="username" class="form-label">Username</label>
                     <div class="input-wrapper">
-                        <input type="text" name="username" id="username" class="form-control" placeholder="Masukkan username/email" required autocomplete="username" autofocus>
+                        <input type="text" name="username" id="username" class="form-control" placeholder="Masukkan username" required autocomplete="username" autofocus>
                         <i class="bi bi-person-fill"></i>
                     </div>
                 </div>

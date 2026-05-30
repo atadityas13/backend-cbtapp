@@ -48,9 +48,11 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::post('/violations/{id}/unban', [BanController::class, 'unban'])->name('violations.unban');
     Route::post('/violations/bulk-unban', [BanController::class, 'bulkUnban'])->name('violations.bulk-unban');
  
-    // Manajemen File Media
-    Route::get('/media', [MediaController::class, 'index'])->name('media.index');
-    Route::post('/media/delete', [MediaController::class, 'destroy'])->name('media.destroy');
+    // Manajemen File Media (Khusus Super Admin)
+    Route::middleware(['can:manage-proctors'])->group(function () {
+        Route::get('/media', [MediaController::class, 'index'])->name('media.index');
+        Route::post('/media/delete', [MediaController::class, 'destroy'])->name('media.destroy');
+    });
  
     // Pengiriman Notifikasi Push Manual (Firebase Cloud Messaging)
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
@@ -62,16 +64,19 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::post('/notifications/scheduled/{id}/toggle', [ScheduledNotificationController::class, 'toggleActive'])->name('notifications.scheduled.toggle');
     Route::delete('/notifications/scheduled/{id}', [ScheduledNotificationController::class, 'destroy'])->name('notifications.scheduled.destroy');
  
-    // Pengaturan Sistem Ujian, Proktor Ganda, & Iklan
+    // Pengaturan Sistem Ujian & Kredensial Akun
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
-    Route::post('/settings/update', [SettingsController::class, 'updateSettings'])->name('settings.update');
+    Route::post('/settings/profile', [SettingsController::class, 'updateProfile'])->name('profile.update');
     
-    // Manajemen Pembaruan Versi Aplikasi
-    Route::get('/versions', [VersionController::class, 'index'])->name('versions.index');
-    Route::post('/versions/update', [VersionController::class, 'update'])->name('versions.update');
-    
-    // Kelola Proktor (Hanya untuk Role Admin/Super Admin)
+    // Manajemen Pembaruan Versi Aplikasi (Khusus Super Admin)
     Route::middleware(['can:manage-proctors'])->group(function () {
+        Route::get('/versions', [VersionController::class, 'index'])->name('versions.index');
+        Route::post('/versions/update', [VersionController::class, 'update'])->name('versions.update');
+    });
+    
+    // Kelola Proktor & Pengaturan Sistem (Khusus Super Admin)
+    Route::middleware(['can:manage-proctors'])->group(function () {
+        Route::post('/settings/update', [SettingsController::class, 'updateSettings'])->name('settings.update');
         Route::post('/settings/proctors', [SettingsController::class, 'addProctor'])->name('proctors.store');
         Route::delete('/settings/proctors/{id}', [SettingsController::class, 'deleteProctor'])->name('proctors.destroy');
     });

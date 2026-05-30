@@ -1,8 +1,8 @@
 @extends('layouts.admin')
 
-@section('title', 'Pengaturan Sistem')
+@section('title', Auth::user()->role === 'admin' ? 'Pengaturan Sistem' : 'Kredensial Akun')
 
-@section('header_title', 'Konfigurasi CBT & Kelola Proktor')
+@section('header_title', Auth::user()->role === 'admin' ? 'Konfigurasi CBT & Kelola Proktor' : 'Kredensial Akun Anda')
 
 @section('content')
 <style>
@@ -10,6 +10,11 @@
         display: grid;
         grid-template-columns: 2fr 1fr;
         gap: 24px;
+    }
+
+    .settings-single {
+        max-width: 600px;
+        margin: 0 auto;
     }
 
     @media (max-width: 991px) {
@@ -107,8 +112,9 @@
     }
 </style>
 
-<div class="settings-grid">
+<div class="{{ Auth::user()->role === 'admin' ? 'settings-grid' : 'settings-single' }}">
     
+    @can('manage-proctors')
     <!-- Left column: General Config Form -->
     <div class="card card-primary">
         <form action="{{ route('admin.settings.update') }}" method="POST" enctype="multipart/form-data">
@@ -200,9 +206,45 @@
 
         </form>
     </div>
+    @endcan
 
     <!-- Right column: Proctor Accounts CRUD -->
     <div>
+        <!-- Card 1: Ubah Kredensial Akun Anda (Accessible to All Roles) -->
+        <div class="card card-primary" style="margin-bottom: 24px;">
+            <h2 class="card-title" style="margin-bottom: 20px;">
+                <i class="bi bi-shield-lock-fill"></i> Kredensial Akun Anda
+            </h2>
+            
+            <form action="{{ route('admin.profile.update') }}" method="POST">
+                @csrf
+                
+                <div class="form-group">
+                    <label for="profile_name" class="form-label">Nama Lengkap Anda</label>
+                    <input type="text" name="name" id="profile_name" class="form-control" value="{{ auth()->user()->name }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="profile_username" class="form-label">Username Anda</label>
+                    <input type="text" name="username" id="profile_username" class="form-control" value="{{ auth()->user()->username }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="profile_password" class="form-label">Password Baru (Kosongkan jika tidak diubah)</label>
+                    <input type="password" name="password" id="profile_password" class="form-control" placeholder="Minimal 6 karakter" autocomplete="new-password">
+                </div>
+
+                <div class="form-group">
+                    <label for="profile_password_confirmation" class="form-label">Ulangi Password Baru</label>
+                    <input type="password" name="password_confirmation" id="profile_password_confirmation" class="form-control" placeholder="Ulangi password baru">
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-sm" style="width: 100%; margin-top: 10px;">
+                    <i class="bi bi-check-circle-fill"></i> Simpan Perubahan Akun
+                </button>
+            </form>
+        </div>
+
         @can('manage-proctors')
             <!-- Card content visible ONLY to Super Admins -->
             <div class="card card-primary" style="margin-bottom: 24px;">
@@ -215,17 +257,12 @@
                     
                     <div class="form-group">
                         <label for="name" class="form-label">Nama Lengkap Proktor</label>
-                        <input type="text" name="name" id="name" class="form-control" placeholder="Contoh: Riyan Mardiyana, S.Pd." required>
+                        <input type="text" name="name" id="name" class="form-control" placeholder="Contoh: Anzas Tio Aditya, S.Kom." required>
                     </div>
 
                     <div class="form-group">
                         <label for="username" class="form-label">Username</label>
                         <input type="text" name="username" id="username" class="form-control" placeholder="username_proktor" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="email" class="form-label">Email (Opsional)</label>
-                        <input type="email" name="email" id="email" class="form-control" placeholder="email@mtsn11majalengka.sch.id">
                     </div>
 
                     <div class="form-group">

@@ -19,7 +19,6 @@ class DatabaseSeeder extends Seeder
             ['username' => 'admin'],
             [
                 'name' => 'Anzas Tio Aditya',
-                'email' => 'admin@cbt.mtsn11majalengka.sch.id',
                 'password' => Hash::make('Admin021398'), // Default secure password
                 'role' => 'admin',
             ]

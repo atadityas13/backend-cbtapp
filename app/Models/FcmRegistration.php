@@ -24,9 +24,6 @@ class FcmRegistration extends Model
         'alarm_muted_lifetime' => 'boolean'
     ];
  
-    // Map legacy registration_timestamp column to CREATED_AT
-    const CREATED_AT = 'registration_timestamp';
-
     public function latestViolation()
     {
         return $this->hasOne(CbtPelanggaran::class, 'fcm_token', 'fcm_token')->latestOfMany();

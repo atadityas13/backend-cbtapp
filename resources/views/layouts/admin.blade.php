@@ -608,28 +608,30 @@
                     <span>Kirim Notifikasi Push</span>
                 </a>
             </li>
-            <li class="sidebar-item {{ Route::is('admin.media.*') ? 'active' : '' }}">
-                <a href="{{ route('admin.media.index') }}">
-                    <i class="bi bi-file-earmark-music-fill"></i>
-                    <span>Manajemen File Media</span>
-                </a>
-            </li>
-            <li class="sidebar-item {{ Route::is('admin.versions.*') ? 'active' : '' }}">
-                <a href="{{ route('admin.versions.index') }}">
-                    <i class="bi bi-arrow-up-circle-fill"></i>
-                    <span>Manajemen Versi</span>
-                </a>
-            </li>
-            <li class="sidebar-item {{ Route::is('admin.settings.*') ? 'active' : '' }}">
-                <a href="{{ route('admin.settings.index') }}">
-                    <i class="bi bi-gear-fill"></i>
-                    <span>Pengaturan Sistem</span>
-                </a>
-            </li>
+            @if(Auth::user()->role === 'admin')
+                <li class="sidebar-item {{ Route::is('admin.media.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.media.index') }}">
+                        <i class="bi bi-file-earmark-music-fill"></i>
+                        <span>Manajemen File Media</span>
+                    </a>
+                </li>
+                <li class="sidebar-item {{ Route::is('admin.versions.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.versions.index') }}">
+                        <i class="bi bi-arrow-up-circle-fill"></i>
+                        <span>Manajemen Versi</span>
+                    </a>
+                </li>
+                <li class="sidebar-item {{ Route::is('admin.settings.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.settings.index') }}">
+                        <i class="bi bi-gear-fill"></i>
+                        <span>Pengaturan Sistem</span>
+                    </a>
+                </li>
+            @endif
         </ul>
         
         <!-- Authenticated User Profile Summary at bottom -->
-        <div class="sidebar-user">
+        <a href="{{ route('admin.settings.index') }}" class="sidebar-user" style="text-decoration: none; color: inherit; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='var(--bg-surface-hover)'" onmouseout="this.style.backgroundColor='transparent'">
             <div class="sidebar-user-avatar">
                 {{ strtoupper(substr(Auth::user()->name ?? 'P', 0, 1)) }}
             </div>
@@ -639,7 +641,10 @@
                     {{ Auth::user()->role === 'admin' ? 'Super Admin' : 'Proktor' }}
                 </div>
             </div>
-        </div>
+            <div class="sidebar-user-action" style="color: var(--text-secondary); margin-left: auto; transition: color 0.2s;">
+                <i class="bi bi-gear-fill"></i>
+            </div>
+        </a>
     </aside>
 
     <!-- Main Content Wrapper -->

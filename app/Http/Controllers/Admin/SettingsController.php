@@ -92,14 +92,12 @@ class SettingsController extends Controller
         $validated = $request->validate([
             'name'     => 'required|string|max:255',
             'username' => 'required|string|max:255|unique:users,username',
-            'email'    => 'nullable|email|max:255|unique:users,email',
             'password' => 'required|string|min:6|confirmed',
         ]);
 
         User::create([
             'name'     => $validated['name'],
             'username' => $validated['username'],
-            'email'    => $validated['email'],
             'password' => Hash::make($validated['password']),
             'role'     => 'proktor',
         ]);
@@ -121,5 +119,35 @@ class SettingsController extends Controller
         $user->delete();
 
         return redirect()->route('admin.settings.index')->with('success', 'Akun Proktor berhasil dihapus.');
+    }
+
+    /**
+     * Update the logged-in user's own profile credentials
+     */
+    public function updateProfile(Request $request)
+    {
+        $user = auth()->user();
+
+        $validated = $request->validate([
+            'name'     => 'required|string|max:255',
+            'username' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('users', 'username')->ignore($user->id),
+            ],
+            'password' => 'nullable|string|min:6|confirmed',
+        ]);
+
+        $user->name = $validated['name'];
+        $user->username = $validated['username'];
+
+        if (!empty($validated['password'])) {
+            $user->password = Hash::make($validated['password']);
+        }
+
+        $user->save();
+
+        return redirect()->route('admin.settings.index')->with('success', 'Kredensial akun Anda berhasil diperbarui.');
     }
 }

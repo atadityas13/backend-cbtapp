@@ -129,4 +129,116 @@ class CbtBackendTest extends TestCase
         $this->assertEquals(7, Setting::getValue('latest_version_code'));
         $this->assertTrue(Setting::getValue('force_update'));
     }
+
+    /**
+     * Test guest cannot update profile credentials
+     */
+    public function test_guest_cannot_update_profile(): void
+    {
+        $response = $this->post('/admin/settings/profile', [
+            'name' => 'New Name',
+            'username' => 'newusername',
+        ]);
+        $response->assertRedirect('/login');
+    }
+
+    /**
+     * Test authenticated admin can update their own profile credentials
+     */
+    public function test_admin_can_update_profile(): void
+    {
+        $user = User::create([
+            'name' => 'Original Name',
+            'username' => 'originaluser',
+            'password' => bcrypt('password'),
+            'role' => 'admin'
+        ]);
+
+        $response = $this->actingAs($user)->post('/admin/settings/profile', [
+            'name' => 'Updated Name',
+            'username' => 'updateduser',
+            'password' => 'newpassword',
+            'password_confirmation' => 'newpassword'
+        ]);
+
+        $response->assertRedirect(route('admin.settings.index'));
+        
+        $freshUser = $user->fresh();
+        $this->assertEquals('Updated Name', $freshUser->name);
+        $this->assertEquals('updateduser', $freshUser->username);
+        $this->assertTrue(\Illuminate\Support\Facades\Hash::check('newpassword', $freshUser->password));
+    }
+
+    /**
+     * Test authenticated proctor cannot access admin-only menus/routes
+     */
+    public function test_proctor_cannot_access_admin_only_routes(): void
+    {
+        $user = User::create([
+            'name' => 'Test Proctor',
+            'username' => 'testproctor',
+            'password' => bcrypt('password'),
+            'role' => 'proktor'
+        ]);
+
+        $this->actingAs($user);
+
+        // Try accessing Media Management GET & POST
+        $response = $this->get('/admin/media');
+        $response->assertStatus(403);
+
+        $response = $this->post('/admin/media/delete');
+        $response->assertStatus(403);
+
+        // Try accessing Version Management GET & POST
+        $response = $this->get('/admin/versions');
+        $response->assertStatus(403);
+
+        $response = $this->post('/admin/versions/update');
+        $response->assertStatus(403);
+
+        // Try accessing System Settings Update POST
+        $response = $this->post('/admin/settings/update', [
+            'operational_start_date' => '2026-01-01 00:00:00',
+            'operational_end_date' => '2026-12-31 23:59:59',
+            'daily_start_hour' => 7,
+            'daily_start_minute' => 0,
+            'daily_end_hour' => 12,
+            'daily_end_minute' => 0,
+            'ad_time' => 5
+        ]);
+        $response->assertStatus(403);
+    }
+
+    /**
+     * Test authenticated proctor can access settings profile page and update their own credentials
+     */
+    public function test_proctor_can_access_settings_and_update_profile(): void
+    {
+        $user = User::create([
+            'name' => 'Original Proctor',
+            'username' => 'origproctor',
+            'password' => bcrypt('password'),
+            'role' => 'proktor'
+        ]);
+
+        $response = $this->actingAs($user)->get('/admin/settings');
+        $response->assertStatus(200);
+        $response->assertSee('Kredensial Akun Anda');
+        $response->assertDontSee('Simpan Semua Setelan Sistem'); // Form settings should be hidden
+
+        $response = $this->post('/admin/settings/profile', [
+            'name' => 'Updated Proctor Name',
+            'username' => 'updatedproctor',
+            'password' => 'proctorpass123',
+            'password_confirmation' => 'proctorpass123'
+        ]);
+
+        $response->assertRedirect(route('admin.settings.index'));
+
+        $freshUser = $user->fresh();
+        $this->assertEquals('Updated Proctor Name', $freshUser->name);
+        $this->assertEquals('updatedproctor', $freshUser->username);
+        $this->assertTrue(\Illuminate\Support\Facades\Hash::check('proctorpass123', $freshUser->password));
+    }
 }

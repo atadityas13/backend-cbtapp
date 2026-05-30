@@ -30,11 +30,8 @@ class LoginController extends Controller
             'password' => 'required|string',
         ]);
  
-        // Attempt login using either username OR email (highly convenient!)
-        $loginField = filter_var($credentials['username'], FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
-        
         $authAttempt = [
-            $loginField => $credentials['username'],
+            'username' => $credentials['username'],
             'password'  => $credentials['password']
         ];
  
