@@ -114,7 +114,7 @@ class PointsController extends Controller
 
             return response()->json([
                 'status' => 'success',
-                'message' => 'Denda berhasil dibayarkan, Poin Kepatuhan disesuaikan.',
+                'message' => 'Denda berhasil dibayarkan, Poin Proteksi disesuaikan.',
                 'new_points' => $registration->points,
                 'alarm_muted_lifetime' => (bool)$registration->alarm_muted_lifetime
             ]);
@@ -141,16 +141,16 @@ class PointsController extends Controller
         $packageName = '';
         if ($packet === 'packet_a') {
             $pointsToAdd = 2; // Rp 1.000
-            $packageName = 'Penebusan Denda Ringan (+2 Poin Kepatuhan)';
+            $packageName = 'Penebusan Denda Ringan (+2 Poin Proteksi)';
         } elseif ($packet === 'packet_b') {
             $pointsToAdd = 5; // Rp 2.500
-            $packageName = 'Penebusan Denda Sedang (+5 Poin Kepatuhan)';
+            $packageName = 'Penebusan Denda Sedang (+5 Poin Proteksi)';
         } elseif ($packet === 'packet_c') {
             $pointsToAdd = 10; // Rp 5.000
-            $packageName = 'Penebusan Denda Utama (+10 Poin Kepatuhan)';
+            $packageName = 'Penebusan Denda Utama (+10 Poin Proteksi)';
         } elseif ($packet === 'packet_d') {
             $pointsToAdd = 20; // Rp 10.000
-            $packageName = 'Penebusan Denda Maksimal (+20 Poin Kepatuhan)';
+            $packageName = 'Penebusan Denda Maksimal (+20 Poin Proteksi)';
         } else {
             return response()->json([
                 'status' => 'error',
@@ -172,7 +172,7 @@ class PointsController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => "Pemulihan Poin Kepatuhan sukses! Berhasil memproses {$packageName}.",
+            'message' => "Pemulihan Poin Proteksi sukses! Berhasil memproses {$packageName}.",
             'new_points' => $registration->points
         ]);
     }
@@ -229,7 +229,7 @@ class PointsController extends Controller
         } else {
             // Default/Fallback jika menggunakan custom ID
             $pointsToAdd = 10;
-            $packageName = 'Penebusan Denda Kepatuhan (+10 Poin)';
+            $packageName = 'Penebusan Denda Proteksi (+10 Poin)';
         }
 
         // 4. Cari siswa berdasarkan android_id
