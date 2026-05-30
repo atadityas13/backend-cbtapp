@@ -30,6 +30,11 @@ class SettingsController extends Controller
             'ad_image'                => Setting::getValue('ad_image', ''),
             'ad_author'               => Setting::getValue('ad_author', ''),
             'ad_time'                 => Setting::getValue('ad_time', 3),
+            'latest_version'          => Setting::getValue('latest_version', '4.2.3'),
+            'latest_version_code'     => intval(Setting::getValue('latest_version_code', 6)),
+            'download_url'            => Setting::getValue('download_url', 'https://play.google.com/store/apps/details?id=com.mtsn11.cbtapp'),
+            'release_notes'           => Setting::getValue('release_notes', "Pembaruan Sistem:\n• Kepatuhan disiplin baru\n• Penyempurnaan sistem keamanan"),
+            'force_update'            => (bool) Setting::getValue('force_update', true),
         ];
 
         // Fetch proctors (only visible/manageable if user is admin/superadmin, but we pass it anyway)
@@ -56,6 +61,11 @@ class SettingsController extends Controller
             'ad_image'                => 'nullable|string|max:1000',
             'ad_author'               => 'nullable|string|max:255',
             'ad_time'                 => 'required|integer|min:1|max:60',
+            'latest_version'          => 'required|string|max:50',
+            'latest_version_code'     => 'required|integer|min:1',
+            'download_url'            => 'required|string|max:1000',
+            'release_notes'           => 'required|string|max:2000',
+            'force_update'            => 'nullable|boolean',
         ]);
 
         // Process file upload for Ad Image if provided
@@ -80,6 +90,11 @@ class SettingsController extends Controller
         Setting::setValue('ad_image', $adImageUrl);
         Setting::setValue('ad_author', $validated['ad_author'] ?? '');
         Setting::setValue('ad_time', $validated['ad_time']);
+        Setting::setValue('latest_version', $validated['latest_version']);
+        Setting::setValue('latest_version_code', $validated['latest_version_code']);
+        Setting::setValue('download_url', $validated['download_url']);
+        Setting::setValue('release_notes', $validated['release_notes']);
+        Setting::setValue('force_update', $request->has('force_update'));
 
         return redirect()->route('admin.settings.index')->with('success', 'Pengaturan sistem berhasil diperbarui.');
     }

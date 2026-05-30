@@ -192,6 +192,37 @@
                 </div>
             </div>
 
+            <!-- SECTION 5: App Version Management -->
+            <div class="form-section-title" style="margin-top: 24px;">5. Manajemen Pembaruan Versi Aplikasi</div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="latest_version" class="form-label">Nama Versi Terbaru (e.g. 4.2.3)</label>
+                    <input type="text" name="latest_version" id="latest_version" class="form-control" value="{{ $settings['latest_version'] }}" placeholder="4.2.3" required>
+                </div>
+                <div class="form-group">
+                    <label for="latest_version_code" class="form-label">Kode Versi Terbaru (e.g. 6)</label>
+                    <input type="number" name="latest_version_code" id="latest_version_code" class="form-control" value="{{ $settings['latest_version_code'] }}" placeholder="6" required>
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 12px;">
+                <label for="download_url" class="form-label">URL Unduhan Aplikasi (Play Store / Link Unduhan Langsung)</label>
+                <input type="text" name="download_url" id="download_url" class="form-control" value="{{ $settings['download_url'] }}" placeholder="https://play.google.com/store/apps/details?id=com.mtsn11.cbtapp" required>
+            </div>
+
+            <div class="form-group" style="margin-top: 12px;">
+                <label for="release_notes" class="form-label">Catatan Rilis (Release Notes)</label>
+                <textarea name="release_notes" id="release_notes" class="form-control" rows="4" style="font-family: monospace;" placeholder="• Pembaruan keamanan&#10;• Peningkatan performa" required>{{ $settings['release_notes'] }}</textarea>
+            </div>
+
+            <div class="form-group" style="margin-top: 16px;">
+                <label class="checkbox-tile" style="margin-bottom: 20px;">
+                    <input type="checkbox" name="force_update" value="1" {{ $settings['force_update'] ? 'checked' : '' }}>
+                    <span class="checkbox-tile-label">Wajibkan Pembaruan Aplikasi (Force Update)</span>
+                </label>
+            </div>
+
             <div style="margin-top: 32px;">
                 <button type="submit" class="btn btn-primary" style="width: 100%;">
                     <i class="bi bi-save2-fill"></i> Simpan Semua Setelan Sistem

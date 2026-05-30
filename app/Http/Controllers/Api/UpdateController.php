@@ -36,17 +36,19 @@ class UpdateController extends Controller
         }
 
         // ── Platform Android: skema standar ───────────────────────────────────
-        $latestVersion = Setting::getValue('latest_version', '4.2.3');
-        $releaseNotes  = Setting::getValue(
+        $latestVersion     = Setting::getValue('latest_version', '4.2.3');
+        $latestVersionCode = intval(Setting::getValue('latest_version_code', 6));
+        $releaseNotes      = Setting::getValue(
             'release_notes',
             "Pembaruan Sistem v4.2.3:\n\n• Peningkatan perizinan Do Not Disturb (DND).\n• Keamanan sistem proktor baru.\n• Sistem poin gamifikasi."
         );
 
         return response()->json([
-            'latest_version' => $latestVersion,
-            'release_notes'  => $releaseNotes,
-            'download_url'   => $downloadUrl,
-            'force_update'   => (bool) $forceUpdate,
+            'latest_version'      => $latestVersion,
+            'latest_version_code' => $latestVersionCode,
+            'release_notes'       => $releaseNotes,
+            'download_url'        => $downloadUrl,
+            'force_update'        => (bool) $forceUpdate,
         ]);
     }
 }
