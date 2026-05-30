@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\FcmRegistration;
 use App\Models\CbtPelanggaran;
+use App\Models\IapPurchase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -174,5 +175,93 @@ class PointsController extends Controller
             'message' => "Pemulihan Poin Kepatuhan sukses! Berhasil memproses {$packageName}.",
             'new_points' => $registration->points
         ]);
+    }
+
+    /**
+     * Endpoint: /api/points/topup/verify-iap
+     * Securely verify Google Play IAP purchase and credit student points.
+     * Protected against replay attacks using unique token checking.
+     */
+    public function verifyIapPurchase(Request $request)
+    {
+        $androidId = trim($request->input('android_id', ''));
+        $purchaseToken = trim($request->input('purchase_token', ''));
+        $productId = trim($request->input('product_id', ''));
+        $orderId = trim($request->input('order_id', ''));
+
+        if (empty($androidId) || empty($purchaseToken) || empty($productId) || empty($orderId)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'android_id, purchase_token, product_id, dan order_id wajib diisi!'
+            ], 400);
+        }
+
+        // 1. PROTEKSI REPLAY ATTACK: Pastikan token belum pernah dipakai
+        $duplicateToken = IapPurchase::where('purchase_token', $purchaseToken)->first();
+        if ($duplicateToken) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Token pembelian telah digunakan! Pembayaran ganda diblokir.'
+            ], 400);
+        }
+
+        // 2. Proteksi order ID ganda
+        $duplicateOrder = IapPurchase::where('order_id', $orderId)->first();
+        if ($duplicateOrder) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Order ID telah terdaftar! Pembayaran ganda diblokir.'
+            ], 400);
+        }
+
+        // 3. Tentukan jumlah poin kepatuhan
+        $pointsToAdd = 0;
+        $packageName = '';
+        if ($productId === 'denda_ringan') {
+            $pointsToAdd = 10;
+            $packageName = 'Penebusan Denda Ringan (Rp 4.500 = +10 Poin)';
+        } elseif ($productId === 'denda_sedang') {
+            $pointsToAdd = 22;
+            $packageName = 'Penebusan Denda Sedang (Rp 9.000 = +22 Poin)';
+        } elseif ($productId === 'denda_berat') {
+            $pointsToAdd = 35;
+            $packageName = 'Penebusan Denda Berat (Rp 13.000 = +35 Poin)';
+        } else {
+            // Default/Fallback jika menggunakan custom ID
+            $pointsToAdd = 10;
+            $packageName = 'Penebusan Denda Kepatuhan (+10 Poin)';
+        }
+
+        // 4. Cari siswa berdasarkan android_id
+        $registration = FcmRegistration::where('android_id', $androidId)->first();
+        if (!$registration) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Perangkat tidak terdaftar!'
+            ], 404);
+        }
+
+        // 5. Jalankan transaksi database
+        return DB::transaction(function () use ($registration, $purchaseToken, $productId, $orderId, $pointsToAdd, $packageName) {
+            // Simpan riwayat pembelian IAP
+            IapPurchase::create([
+                'purchase_token' => $purchaseToken,
+                'order_id' => $orderId,
+                'android_id' => $registration->android_id,
+                'product_id' => $productId,
+                'points_added' => $pointsToAdd,
+                'status' => 'SUCCESS'
+            ]);
+
+            // Tambahkan poin ke siswa
+            $registration->points += $pointsToAdd;
+            $registration->save();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => "Verifikasi IAP Sukses! {$packageName} berhasil diproses.",
+                'new_points' => $registration->points
+            ]);
+        });
     }
 }

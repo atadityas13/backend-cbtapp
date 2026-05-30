@@ -30,3 +30,5 @@ Route::post('/notifikasi/resolve_ban.php', [ViolationController::class, 'resolve
 // 4. Manajemen Poin Kepatuhan & Penebusan Denda
 Route::post('/points/spend', [\App\Http\Controllers\Api\PointsController::class, 'spendPoints']);
 Route::post('/points/topup', [\App\Http\Controllers\Api\PointsController::class, 'topupPoints']);
+Route::post('/points/topup/verify-iap', [\App\Http\Controllers\Api\PointsController::class, 'verifyIapPurchase']);
+
