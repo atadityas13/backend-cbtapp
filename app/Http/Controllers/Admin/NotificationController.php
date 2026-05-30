@@ -128,6 +128,10 @@ class NotificationController extends Controller
             }
         }
  
+        if (!class_exists('\Kreait\Firebase\Factory')) {
+            return redirect()->back()->withInput()->with('error', 'Library Firebase PHP SDK belum terinstall di hosting. Silakan jalankan perintah "composer install" di hosting Anda.');
+        }
+
         try {
             $factory = (new Factory)->withServiceAccount($serviceAccountPath);
             $messaging = $factory->createMessaging();
@@ -180,11 +184,13 @@ class NotificationController extends Controller
                 }
  
                 foreach ($tokens as $idx => $token) {
-                    $message = CloudMessage::withTarget('token', $token)
-                        ->withAndroidConfig($androidConfig)
-                        ->withWebPushConfig($webpushConfig)
-                        ->withApnsConfig($apnsConfig)
-                        ->withData($dataPayload);
+                    $message = CloudMessage::fromArray([
+                        'token' => $token,
+                        'data' => $dataPayload,
+                        'android' => $androidConfig,
+                        'webpush' => $webpushConfig,
+                        'apns' => $apnsConfig,
+                    ]);
                     
                     $messaging->send($message);
                     if ($idx < count($tokens) - 1) {
@@ -202,11 +208,13 @@ class NotificationController extends Controller
                     return redirect()->back()->withInput()->with('error', 'Silakan pilih target Topik atau Token Siswa!');
                 }
  
-                $message = CloudMessage::withTarget($targetType, $targetValue)
-                    ->withAndroidConfig($androidConfig)
-                    ->withWebPushConfig($webpushConfig)
-                    ->withApnsConfig($apnsConfig)
-                    ->withData($dataPayload);
+                $message = CloudMessage::fromArray([
+                    $targetType => $targetValue,
+                    'data' => $dataPayload,
+                    'android' => $androidConfig,
+                    'webpush' => $webpushConfig,
+                    'apns' => $apnsConfig,
+                ]);
  
                 $messaging->send($message);
                 
@@ -215,8 +223,8 @@ class NotificationController extends Controller
  
         } catch (MessagingException $e) {
             return redirect()->back()->withInput()->with('error', 'Firebase Error: ' . $e->getMessage());
-        } catch (\Exception $e) {
-            return redirect()->back()->withInput()->with('error', 'Error: ' . $e->getMessage());
+        } catch (\Throwable $e) {
+            return redirect()->back()->withInput()->with('error', 'Error: ' . $e->getMessage() . ' (' . $e->getFile() . ':' . $e->getLine() . ')');
         }
     }
 
