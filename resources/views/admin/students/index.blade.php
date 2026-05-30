@@ -143,11 +143,8 @@
             <thead>
                 <tr>
                     <th>Nama Siswa</th>
-                    <th>Topik</th>
-                    <th>Android ID</th>
-                    <th>Nama Device</th>
-                    <th>FCM Token</th>
-                    <th>Waktu Registrasi</th>
+                    <th>Device & Android</th>
+                    <th>Poin Proteksi</th>
                     <th class="text-right">Aksi</th>
                 </tr>
             </thead>
@@ -155,10 +152,6 @@
                 @forelse($students as $student)
                     <tr>
                         <td style="font-weight: 600; color: #fff;">{{ $student->full_name }}</td>
-                        <td>
-                            <span class="badge badge-success">{{ $student->topic }}</span>
-                        </td>
-                        <td style="font-family: monospace; font-size: 13px;">{{ $student->android_id }}</td>
                         <td>
                             @if(!empty($student->device_model))
                                 <div><i class="bi bi-phone"></i> {{ $student->device_model }}</div>
@@ -173,23 +166,27 @@
                             @endif
                         </td>
                         <td>
-                            <div class="token-preview" title="Klik untuk menyalin token lengkap" onclick="navigator.clipboard.writeText('{{ $student->fcm_token }}'); alert('Token disalin ke clipboard!');">
-                                {{ $student->fcm_token }}
-                            </div>
-                        </td>
-                        <td style="font-size: 13px; color: var(--text-secondary);">
-                            {{ $student->registration_timestamp }}
+                            <span class="badge" style="background-color: rgba(16, 185, 129, 0.15); color: var(--primary); font-weight: bold; border: 1px solid rgba(16, 185, 129, 0.3); font-size: 13px; padding: 6px 12px;">
+                                <i class="bi bi-shield-fill-check"></i> {{ $student->points }} Poin
+                            </span>
                         </td>
                         <td class="text-right">
                             <div class="inline-actions" style="justify-content: flex-end;">
-                                <button type="button" class="btn btn-secondary btn-sm" onclick="openEditModal({{ $student->id }}, '{{ addslashes($student->full_name) }}', '{{ $student->topic }}', '{{ $student->android_id }}')">
+                                <!-- Detail Button -->
+                                <button type="button" class="btn btn-secondary btn-sm" onclick="openDetailModal({{ json_encode($student) }})" title="Detail Informasi">
+                                    <i class="bi bi-eye-fill" style="color: var(--warning);"></i>
+                                </button>
+
+                                <!-- Edit Button -->
+                                <button type="button" class="btn btn-secondary btn-sm" onclick="openEditModal({{ $student->id }}, '{{ addslashes($student->full_name) }}', {{ $student->points }})" title="Edit Data">
                                     <i class="bi bi-pencil-fill" style="color: var(--primary);"></i>
                                 </button>
                                 
-                                <form action="{{ route('admin.students.destroy', $student->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus registrasi perangkat untuk {{ $student->full_name }}? Siswa harus mendaftar ulang di aplikasinya.');">
+                                <!-- Delete Button -->
+                                <form action="{{ route('admin.students.destroy', $student->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus registrasi perangkat untuk {{ $student->full_name }}? Siswa harus mendaftar ulang di aplikasinya.');" style="display: inline-block;">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn btn-secondary btn-sm" style="border-color: rgba(239, 68, 68, 0.2);">
+                                    <button type="submit" class="btn btn-secondary btn-sm" style="border-color: rgba(239, 68, 68, 0.2);" title="Hapus Registrasi">
                                         <i class="bi bi-trash3-fill" style="color: var(--danger);"></i>
                                     </button>
                                 </form>
@@ -198,7 +195,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="7" class="text-center" style="padding: 40px; color: var(--text-muted);">
+                        <td colspan="4" class="text-center" style="padding: 40px; color: var(--text-muted);">
                             <i class="bi bi-people" style="font-size: 32px; display: block; margin-bottom: 8px;"></i>
                             Tidak ada data perangkat siswa terdaftar.
                         </td>
@@ -215,6 +212,70 @@
         </div>
         <div>
             {{ $students->appends(['search' => $search])->links('pagination::bootstrap-5') }}
+        </div>
+    </div>
+</div>
+
+<!-- Detail Student Dialog Modal -->
+<div class="custom-modal" id="detailModal">
+    <div class="modal-content" style="max-width: 600px;">
+        <button type="button" class="modal-close" onclick="closeDetailModal()"><i class="bi bi-x"></i></button>
+        <h2 class="modal-title">
+            <i class="bi bi-person-badge-fill"></i>
+            Detail Perangkat Siswa
+        </h2>
+        
+        <div class="table-responsive" style="border: none;">
+            <table class="table" style="margin-bottom: 0;">
+                <tbody>
+                    <tr>
+                        <td style="font-weight: 700; width: 40%; color: var(--text-secondary); border-bottom: 1px solid var(--border-color);">Nama Lengkap</td>
+                        <td id="detail_full_name" style="color: #fff; border-bottom: 1px solid var(--border-color); font-weight: 600;">-</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: 700; color: var(--text-secondary); border-bottom: 1px solid var(--border-color);">Android ID</td>
+                        <td id="detail_android_id" style="color: #fff; border-bottom: 1px solid var(--border-color); font-family: monospace;">-</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: 700; color: var(--text-secondary); border-bottom: 1px solid var(--border-color);">Topik Notifikasi</td>
+                        <td style="border-bottom: 1px solid var(--border-color);"><span class="badge badge-success" id="detail_topic">-</span></td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: 700; color: var(--text-secondary); border-bottom: 1px solid var(--border-color);">Tipe / Model Device</td>
+                        <td id="detail_device_model" style="color: #fff; border-bottom: 1px solid var(--border-color);">-</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: 700; color: var(--text-secondary); border-bottom: 1px solid var(--border-color);">Versi Android</td>
+                        <td id="detail_android_version" style="color: #fff; border-bottom: 1px solid var(--border-color);">-</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: 700; color: var(--text-secondary); border-bottom: 1px solid var(--border-color);">Poin Proteksi</td>
+                        <td style="border-bottom: 1px solid var(--border-color);">
+                            <span class="badge" id="detail_points" style="background-color: rgba(16, 185, 129, 0.15); color: var(--primary); font-weight: bold; border: 1px solid rgba(16, 185, 129, 0.3); font-size: 13px; padding: 4px 8px;">-</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: 700; color: var(--text-secondary); border-bottom: 1px solid var(--border-color);">Alarm Mute Lifetime</td>
+                        <td id="detail_alarm_mute" style="color: #fff; border-bottom: 1px solid var(--border-color); font-weight: 600;">-</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: 700; color: var(--text-secondary); border-bottom: 1px solid var(--border-color);">Waktu Registrasi</td>
+                        <td id="detail_reg_time" style="color: #fff; border-bottom: 1px solid var(--border-color);">-</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: 700; color: var(--text-secondary); border-bottom: none; vertical-align: top; padding-top: 12px;">FCM Token</td>
+                        <td style="border-bottom: none; padding-top: 12px;">
+                            <div class="token-preview" id="detail_fcm_token" style="max-width: 300px; word-break: break-all; white-space: normal; cursor: pointer; color: var(--text-secondary);" title="Klik untuk menyalin token lengkap" onclick="copyTokenFromDetail()">
+                                -
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
+            <button type="button" class="btn btn-secondary" onclick="closeDetailModal()">Tutup</button>
         </div>
     </div>
 </div>
@@ -237,13 +298,8 @@
             </div>
 
             <div class="form-group">
-                <label for="modal_topic" class="form-label">Topik Notifikasi (e.g. cbt_notif)</label>
-                <input type="text" name="topic" id="modal_topic" class="form-control" required>
-            </div>
-
-            <div class="form-group">
-                <label for="modal_android_id" class="form-label">Android ID</label>
-                <input type="text" name="android_id" id="modal_android_id" class="form-control" required>
+                <label for="modal_points" class="form-label">Poin Proteksi</label>
+                <input type="number" name="points" id="modal_points" class="form-control" min="0" required>
             </div>
 
             <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 28px;">
@@ -261,17 +317,18 @@
     const editModal = document.getElementById('editModal');
     const editForm = document.getElementById('editForm');
     const modalName = document.getElementById('modal_name');
-    const modalTopic = document.getElementById('modal_topic');
-    const modalAndroidId = document.getElementById('modal_android_id');
+    const modalPoints = document.getElementById('modal_points');
 
-    function openEditModal(id, name, topic, androidId) {
+    const detailModal = document.getElementById('detailModal');
+    let activeToken = '';
+
+    function openEditModal(id, name, points) {
         // Set action url
         editForm.action = `/admin/students/${id}/update`;
         
         // Populate inputs
         modalName.value = name;
-        modalTopic.value = topic;
-        modalAndroidId.value = androidId;
+        modalPoints.value = points;
         
         // Open modal
         editModal.classList.add('active');
@@ -280,12 +337,42 @@
     function closeEditModal() {
         editModal.classList.remove('active');
     }
-    
-    // Close modal on click outside content
-    editModal.addEventListener('click', (e) => {
-        if (e.target === editModal) {
-            closeEditModal();
+
+    function openDetailModal(student) {
+        document.getElementById('detail_full_name').textContent = student.full_name;
+        document.getElementById('detail_android_id').textContent = student.android_id;
+        document.getElementById('detail_topic').textContent = student.topic;
+        document.getElementById('detail_device_model').textContent = student.device_model || 'Tidak diketahui';
+        document.getElementById('detail_android_version').textContent = student.android_version ? 'Android ' + student.android_version : 'Tidak diketahui';
+        document.getElementById('detail_points').innerHTML = '<i class="bi bi-shield-fill-check"></i> ' + student.points + ' Poin';
+        document.getElementById('detail_alarm_mute').textContent = student.alarm_muted_lifetime ? 'Aktif (Muted)' : 'Tidak Aktif';
+        document.getElementById('detail_reg_time').textContent = student.registration_timestamp || student.created_at || '-';
+        
+        const fcmPreview = document.getElementById('detail_fcm_token');
+        fcmPreview.textContent = student.fcm_token;
+        activeToken = student.fcm_token;
+
+        detailModal.classList.add('active');
+    }
+
+    function closeDetailModal() {
+        detailModal.classList.remove('active');
+    }
+
+    function copyTokenFromDetail() {
+        if (activeToken) {
+            navigator.clipboard.writeText(activeToken);
+            alert('Token disalin ke clipboard!');
         }
+    }
+    
+    // Close modals on click outside content
+    editModal.addEventListener('click', (e) => {
+        if (e.target === editModal) closeEditModal();
+    });
+
+    detailModal.addEventListener('click', (e) => {
+        if (e.target === detailModal) closeDetailModal();
     });
 </script>
 @endsection

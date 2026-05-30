@@ -39,8 +39,7 @@ class StudentController extends Controller
  
         $validated = $request->validate([
             'full_name'  => 'required|string|max:255',
-            'android_id' => 'required|string|max:255',
-            'topic'      => 'required|string|max:255',
+            'points'     => 'required|integer|min:0',
         ]);
  
         $student->update($validated);
