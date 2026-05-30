@@ -1,8 +1,8 @@
 @extends('layouts.admin')
 
-@section('title', 'Kirim Notifikasi Push')
+@section('title', 'Notifikasi Push Terjadwal')
 
-@section('header_title', 'Kirim Firebase Push Notification')
+@section('header_title', 'Notifikasi Terjadwal & Rutin')
 
 @section('content')
 <style>
@@ -10,6 +10,7 @@
         display: grid;
         grid-template-columns: 2fr 1fr;
         gap: 24px;
+        margin-bottom: 30px;
     }
 
     @media (max-width: 991px) {
@@ -154,22 +155,59 @@
         max-height: 140px;
         object-fit: cover;
     }
+
+    .day-checkboxes {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+        gap: 10px;
+        margin-top: 8px;
+    }
+
+    .day-item {
+        background-color: var(--bg-base);
+        border: 1px solid var(--border-color);
+        padding: 8px 12px;
+        border-radius: var(--radius-sm);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        user-select: none;
+        transition: var(--transition);
+    }
+
+    .day-item:hover {
+        border-color: rgba(16, 185, 129, 0.3);
+        background-color: rgba(16, 185, 129, 0.05);
+    }
+
+    .day-item input[type="checkbox"] {
+        cursor: pointer;
+        accent-color: var(--primary);
+    }
+
+    .btn-toggle-active {
+        background: none;
+        border: none;
+        padding: 0;
+        cursor: pointer;
+    }
 </style>
 
 <div class="tabs-container">
-    <a href="{{ route('admin.notifications.index') }}" class="filter-btn active">
+    <a href="{{ route('admin.notifications.index') }}" class="filter-btn">
         <i class="bi bi-send-fill"></i> Kirim Instan (Sekarang)
     </a>
-    <a href="{{ route('admin.notifications.scheduled.index') }}" class="filter-btn">
+    <a href="{{ route('admin.notifications.scheduled.index') }}" class="filter-btn active">
         <i class="bi bi-alarm-fill"></i> Notifikasi Terjadwal & Rutin
     </a>
 </div>
 
 <div class="split-layout">
     
-    <!-- Left: Notification Sender Form -->
+    <!-- Left: Schedule Builder Form -->
     <div class="card card-primary">
-        <form action="{{ route('admin.notifications.send') }}" method="POST" enctype="multipart/form-data">
+        <form action="{{ route('admin.notifications.scheduled.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
 
             <!-- Section 1: Target Selection -->
@@ -211,16 +249,54 @@
             
             <div class="form-group">
                 <label for="judul" class="form-label">Judul Notifikasi</label>
-                <input type="text" name="judul" id="judul" class="form-control" placeholder="Contoh: Pengumuman Penting Ujian Sumatif" required oninput="updatePreview()">
+                <input type="text" name="judul" id="judul" class="form-control" placeholder="Contoh: Mulai Ujian Jam Ke-1 Sekarang" required oninput="updatePreview()">
             </div>
 
             <div class="form-group">
                 <label for="deskripsi" class="form-label">Deskripsi / Isi Pesan</label>
-                <textarea name="deskripsi" id="deskripsi" class="form-control" rows="4" placeholder="Masukkan detail informasi yang ingin dikirimkan..." required oninput="updatePreview()"></textarea>
+                <textarea name="deskripsi" id="deskripsi" class="form-control" rows="4" placeholder="Masukkan isi notifikasi ujian..." required oninput="updatePreview()"></textarea>
             </div>
 
-            <!-- Section 3: Optional Media & Actions -->
-            <div class="form-section-title">3. Lampiran Gambar, Audio & Link (Opsional)</div>
+            <!-- Section 3: Penjadwalan Rutin -->
+            <div class="form-section-title">3. Atur Jadwal Waktu & Hari Kirim</div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="schedule_time" class="form-label">Jam Pengiriman (WIB)</label>
+                    <input type="time" name="schedule_time" id="schedule_time" class="form-control" value="07:30" required>
+                </div>
+                <div class="form-group" style="display: flex; align-items: flex-end; padding-bottom: 4px;">
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="selectAllDays()">
+                        <i class="bi bi-check-all"></i> Pilih Semua Hari
+                    </button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Pilih Hari Pengiriman Rutin</label>
+                <div class="day-checkboxes">
+                    @php
+                        $days = [
+                            'Monday' => 'Senin',
+                            'Tuesday' => 'Selasa',
+                            'Wednesday' => 'Rabu',
+                            'Thursday' => 'Kamis',
+                            'Friday' => 'Jumat',
+                            'Saturday' => 'Sabtu',
+                            'Sunday' => 'Minggu'
+                        ];
+                    @endphp
+                    @foreach($days as $eng => $ind)
+                        <label class="day-item">
+                            <input type="checkbox" name="days_of_week[]" value="{{ $eng }}" class="day-cb" checked>
+                            <span>{{ $ind }}</span>
+                        </label>
+                    @endforeach
+                </div>
+            </div>
+
+            <!-- Section 4: Optional Media & Actions -->
+            <div class="form-section-title">4. Lampiran Gambar, Audio & Link (Opsional)</div>
             
             <div class="form-row">
                 <div class="form-group">
@@ -267,8 +343,8 @@
                 <input type="text" name="link" id="link" class="form-control" placeholder="https://mtsn11majalengka.sch.id">
             </div>
 
-            <!-- Section 4: Advanced Parameters -->
-            <div class="form-section-title">4. Parameter Pengiriman & Kategori</div>
+            <!-- Section 5: Advanced Parameters -->
+            <div class="form-section-title">5. Parameter Pengiriman & Kategori</div>
             
             <div class="form-row">
                 <div class="form-group">
@@ -279,28 +355,22 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="jeda_pengiriman" class="form-label">Jeda Antar Kirim (Massal - Detik)</label>
-                    <input type="number" name="jeda_pengiriman" id="jeda_pengiriman" class="form-control" value="0" min="0">
-                </div>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group">
                     <label for="category" class="form-label">Kategori Pesan</label>
                     <select name="category" id="category" class="form-control">
                         <option value="normal" selected>Normal (Notifikasi Standar)</option>
                         <option value="exam_alert">Exam Alert (Teks Berjalan)</option>
                     </select>
                 </div>
-                <div class="form-group" id="durationField" style="display: none;">
-                    <label for="duration" class="form-label">Durasi Teks Berjalan (Detik)</label>
-                    <input type="number" name="duration" id="duration" class="form-control" value="30" min="5" max="300">
-                </div>
+            </div>
+
+            <div class="form-group" id="durationField" style="display: none;">
+                <label for="duration" class="form-label">Durasi Teks Berjalan (Detik)</label>
+                <input type="number" name="duration" id="duration" class="form-control" value="30" min="5" max="300">
             </div>
 
             <div style="margin-top: 32px;">
                 <button type="submit" class="btn btn-primary" style="width: 100%;">
-                    <i class="bi bi-send-fill"></i> Kirim Notifikasi Sekarang
+                    <i class="bi bi-calendar-plus-fill"></i> Simpan Jadwal Notifikasi Rutin
                 </button>
             </div>
 
@@ -327,9 +397,148 @@
                     </div>
                 </div>
             </div>
+            
+            <div style="margin-top: 24px; background-color: rgba(16, 185, 129, 0.03); border: 1px dashed rgba(16, 185, 129, 0.2); border-radius: var(--radius-md); padding: 16px;">
+                <h5 style="color: var(--primary); font-size: 13px; font-weight: 700; margin-bottom: 8px;">
+                    <i class="bi bi-info-circle-fill"></i> TIPS INFRASTRUKTUR
+                </h5>
+                <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.5; margin: 0;">
+                    Scheduler Laravel perlu dijalankan agar pengiriman otomatis bekerja setiap menit. Daftarkan Cron Job berikut di hosting Anda:<br>
+                    <code style="display: block; background: #000; padding: 6px; border-radius: 4px; color: var(--primary); margin-top: 6px; font-size: 11px; word-break: break-all;">
+                        * * * * * cd {{ base_path() }} && php artisan schedule:run >> /dev/null 2>&1
+                    </code>
+                </p>
+            </div>
         </div>
     </div>
 
+</div>
+
+<!-- Schedule List Table Card -->
+<div class="card card-primary" style="margin-top: 24px;">
+    <div class="form-section-title"><i class="bi bi-table"></i> Daftar Jadwal Notifikasi Aktif</div>
+    
+    <div class="table-responsive">
+        <table class="table" style="width: 100%;">
+            <thead>
+                <tr>
+                    <th>Judul & Pesan</th>
+                    <th>Target</th>
+                    <th>Jadwal Kirim</th>
+                    <th>Kategori / Audio</th>
+                    <th>Status</th>
+                    <th>Terakhir Dikirim</th>
+                    <th class="text-right">Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($schedules as $sched)
+                    <tr>
+                        <td style="max-width: 250px;">
+                            <div style="font-weight: 700; color: #fff; margin-bottom: 4px;">{{ $sched->judul }}</div>
+                            <div style="font-size: 12px; color: var(--text-secondary); white-space: normal; word-break: break-all;">
+                                {{ Str::limit($sched->deskripsi, 80) }}
+                            </div>
+                            @if($sched->gambar_url)
+                                <div style="margin-top: 6px;">
+                                    <span class="badge badge-success" style="font-size: 0.75em; background-color: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.2);">
+                                        <i class="bi bi-image"></i> Gambar Lampiran
+                                    </span>
+                                </div>
+                            @endif
+                        </td>
+                        <td>
+                            @if($sched->fcm_token)
+                                <span class="badge badge-warning" style="background-color: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.2); color: var(--warning);">
+                                    <i class="bi bi-person-fill"></i> Target Khusus (Siswa)
+                                </span>
+                            @else
+                                <span class="badge badge-primary" style="background-color: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.2); color: #3b82f6;">
+                                    <i class="bi bi-broadcast"></i> Topik: {{ $sched->topik ?: 'cbt_notif' }}
+                                </span>
+                            @endif
+                        </td>
+                        <td>
+                            <div style="font-weight: 700; color: var(--primary); font-size: 14px; margin-bottom: 4px;">
+                                <i class="bi bi-clock-fill"></i> {{ $sched->schedule_time }} WIB
+                            </div>
+                            <div style="font-size: 11px; color: var(--text-secondary); white-space: normal;">
+                                @php
+                                    $dayTranslations = [
+                                        'Monday' => 'Senin',
+                                        'Tuesday' => 'Selasa',
+                                        'Wednesday' => 'Rabu',
+                                        'Thursday' => 'Kamis',
+                                        'Friday' => 'Jumat',
+                                        'Saturday' => 'Sabtu',
+                                        'Sunday' => 'Minggu',
+                                        'ALL' => 'Setiap Hari'
+                                    ];
+                                    $renderedDays = array_map(function($d) use ($dayTranslations) {
+                                        return $dayTranslations[$d] ?? $d;
+                                    }, $sched->days_of_week ?? []);
+                                @endphp
+                                {{ implode(', ', $renderedDays) }}
+                            </div>
+                        </td>
+                        <td>
+                            <div>
+                                <span class="badge badge-secondary" style="font-size: 0.8em; text-transform: uppercase;">
+                                    {{ $sched->category }}
+                                </span>
+                            </div>
+                            <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px; word-break: break-all;">
+                                <i class="bi bi-volume-up-fill"></i> 
+                                {{ $sched->custom_sound ? basename($sched->custom_sound) : 'default' }}
+                            </div>
+                        </td>
+                        <td>
+                            <form action="{{ route('admin.notifications.scheduled.toggle', $sched->id) }}" method="POST">
+                                @csrf
+                                <button type="submit" class="btn-toggle-active" title="Klik untuk mengubah status">
+                                    @if($sched->is_active)
+                                        <span class="badge badge-success" style="cursor: pointer; box-shadow: 0 0 8px rgba(16,185,129,0.2);">
+                                            <i class="bi bi-check-circle-fill"></i> Aktif
+                                        </span>
+                                    @else
+                                        <span class="badge badge-danger" style="cursor: pointer; background-color: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2); color: var(--danger);">
+                                            <i class="bi bi-dash-circle-fill"></i> Nonaktif
+                                        </span>
+                                    @endif
+                                </button>
+                            </form>
+                        </td>
+                        <td style="font-size: 12px; color: var(--text-secondary);">
+                            @if($sched->last_sent_at)
+                                {{ $sched->last_sent_at->timezone('Asia/Jakarta')->format('d M Y, H:i') }} WIB
+                                <div style="font-size: 10px; color: var(--text-muted);">
+                                    {{ $sched->last_sent_at->timezone('Asia/Jakarta')->diffForHumans() }}
+                                </div>
+                            @else
+                                <span style="font-style: italic; color: var(--text-muted);">Belum pernah</span>
+                            @endif
+                        </td>
+                        <td class="text-right">
+                            <form action="{{ route('admin.notifications.scheduled.destroy', $sched->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus jadwal notifikasi ini?');" style="display: inline-block;">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-danger btn-sm" style="padding: 6px 10px; border-radius: var(--radius-sm);">
+                                    <i class="bi bi-trash-fill"></i> Hapus
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="7" class="text-center" style="padding: 40px; color: var(--text-muted);">
+                            <i class="bi bi-alarm" style="font-size: 32px; display: block; margin-bottom: 8px;"></i>
+                            Belum ada jadwal notifikasi rutin yang dikonfigurasi.
+                        </td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
 </div>
 
 @endsection
@@ -389,6 +598,14 @@
             }
             reader.readAsDataURL(input.files[0]);
         }
+    }
+
+    function selectAllDays() {
+        const checkboxes = document.querySelectorAll('.day-cb');
+        const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+        checkboxes.forEach(cb => {
+            cb.checked = !allChecked;
+        });
     }
 
     // Dynamic duration field toggle

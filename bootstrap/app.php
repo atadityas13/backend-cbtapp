@@ -16,6 +16,9 @@ return Application::configure(basePath: dirname(__DIR__))
             \Illuminate\Http\Middleware\HandleCors::class,
         ]);
     })
+    ->withSchedule(function (\Illuminate\Console\Scheduling\Schedule $schedule): void {
+        $schedule->job(new \App\Jobs\SendScheduledNotificationJob)->everyMinute();
+    })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
     })->create();

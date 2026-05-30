@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\StudentController;
 use App\Http\Controllers\Admin\BanController;
 use App\Http\Controllers\Admin\NotificationController;
+use App\Http\Controllers\Admin\ScheduledNotificationController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\MediaController;
 use App\Http\Controllers\Admin\VersionController;
@@ -54,6 +55,12 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     // Pengiriman Notifikasi Push Manual (Firebase Cloud Messaging)
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::post('/notifications/send', [NotificationController::class, 'send'])->name('notifications.send');
+    
+    // Pengiriman Notifikasi Push Terjadwal
+    Route::get('/notifications/scheduled', [ScheduledNotificationController::class, 'index'])->name('notifications.scheduled.index');
+    Route::post('/notifications/scheduled', [ScheduledNotificationController::class, 'store'])->name('notifications.scheduled.store');
+    Route::post('/notifications/scheduled/{id}/toggle', [ScheduledNotificationController::class, 'toggleActive'])->name('notifications.scheduled.toggle');
+    Route::delete('/notifications/scheduled/{id}', [ScheduledNotificationController::class, 'destroy'])->name('notifications.scheduled.destroy');
  
     // Pengaturan Sistem Ujian, Proktor Ganda, & Iklan
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
