@@ -42,16 +42,13 @@ class FcmController extends Controller
             }
  
             // Jika nama sama, update token FCM (jika berubah akibat reinstall/clear data)
+            // FIX: Selalu update device_model & android_version agar data lama yang NULL terisi otomatis
             $updateData = [
-                'fcm_token' => $fcmToken,
-                'topic' => $topic
+                'fcm_token'       => $fcmToken,
+                'topic'           => $topic,
+                'device_model'    => !empty($deviceModel) ? $deviceModel : $existingDevice->device_model,
+                'android_version' => !empty($androidVersion) ? $androidVersion : $existingDevice->android_version,
             ];
-            if (!empty($deviceModel)) {
-                $updateData['device_model'] = $deviceModel;
-            }
-            if (!empty($androidVersion)) {
-                $updateData['android_version'] = $androidVersion;
-            }
             $existingDevice->update($updateData);
  
             return response()->json([
@@ -65,17 +62,14 @@ class FcmController extends Controller
         if ($legacyToken) {
             if (empty($legacyToken->android_id)) {
                 // Pasangkan Android ID secara sah jika rekor lama belum memilikinya
+                // FIX: Selalu sertakan device_model & android_version
                 $updateData = [
-                    'android_id' => $androidId,
-                    'full_name' => $fullName,
-                    'topic' => $topic
+                    'android_id'      => $androidId,
+                    'full_name'       => $fullName,
+                    'topic'           => $topic,
+                    'device_model'    => !empty($deviceModel) ? $deviceModel : $legacyToken->device_model,
+                    'android_version' => !empty($androidVersion) ? $androidVersion : $legacyToken->android_version,
                 ];
-                if (!empty($deviceModel)) {
-                    $updateData['device_model'] = $deviceModel;
-                }
-                if (!empty($androidVersion)) {
-                    $updateData['android_version'] = $androidVersion;
-                }
                 $legacyToken->update($updateData);
  
                 return response()->json([
