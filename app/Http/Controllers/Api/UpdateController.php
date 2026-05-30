@@ -36,11 +36,11 @@ class UpdateController extends Controller
         }
 
         // ── Platform Android: skema standar ───────────────────────────────────
-        $latestVersion     = Setting::getValue('latest_version', '4.2.3');
-        $latestVersionCode = intval(Setting::getValue('latest_version_code', 6));
+        $latestVersion     = Setting::getValue('latest_version', '4.2.4');
+        $latestVersionCode = intval(Setting::getValue('latest_version_code', 7));
         $releaseNotes      = Setting::getValue(
             'release_notes',
-            "Pembaruan Sistem v4.2.3:\n\n• Peningkatan perizinan Do Not Disturb (DND).\n• Keamanan sistem proktor baru.\n• Sistem poin gamifikasi."
+            "Pembaruan Sistem v4.2.4:\n\n• Perbaikan bug laporan pelanggaran dikirim 2x ke server.\n• Informasi model HP & versi Android kini tersimpan otomatis.\n• Stabilitas dan optimasi sistem."
         );
 
         return response()->json([

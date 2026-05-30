@@ -101,7 +101,7 @@
 
   <div id="countdown">Menyiapkan CBT-App...</div>
   <div id="footer">
-    CBT-App MTsN 11 Majalengka v.4.2.3<br>
+    CBT-App MTsN 11 Majalengka v.{{ \App\Models\Setting::getValue('latest_version', '4.2.4') }}<br>
     &copy; 2026 Developed by ATA DevLabs
   </div>
 

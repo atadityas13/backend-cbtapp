@@ -14,8 +14,8 @@ class VersionController extends Controller
     public function index()
     {
         $settings = [
-            'latest_version'      => Setting::getValue('latest_version', '4.2.3'),
-            'latest_version_code' => intval(Setting::getValue('latest_version_code', 6)),
+            'latest_version'      => Setting::getValue('latest_version', '4.2.4'),
+            'latest_version_code' => intval(Setting::getValue('latest_version_code', 7)),
             'download_url'        => Setting::getValue('download_url', 'https://play.google.com/store/apps/details?id=com.mtsn11.cbtapp'),
             'release_notes'       => Setting::getValue('release_notes', ''),
             'force_update'        => (bool) Setting::getValue('force_update', false),

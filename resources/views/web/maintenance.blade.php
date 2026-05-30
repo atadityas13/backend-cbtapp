@@ -235,7 +235,7 @@
         </div>
 
         <div class="footer">
-            <p class="mb-1 text-white-50">v4.2.3 Final Release</p>
+            <p class="mb-1 text-white-50">v{{ \App\Models\Setting::getValue('latest_version', '4.2.4') }} Final Release</p>
             <p class="mb-1">&copy; 2025 MTsN 11 Majalengka</p>
             <p class="mb-0">Developed by <a href="https://www.instagram.com/atadityas_13" target="_blank">A.T. Aditya</a></p>
         </div>

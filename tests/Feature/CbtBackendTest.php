@@ -15,7 +15,6 @@ class CbtBackendTest extends TestCase
     {
         parent::setUp();
         
-        // Seed default parameters for setting
         Setting::setValue('asesmen_sumatif_active', true);
         Setting::setValue('asesmen_madrasah_active', false);
         Setting::setValue('download_url', 'https://mtsn11majalengka.sch.id/download');
@@ -23,6 +22,14 @@ class CbtBackendTest extends TestCase
         Setting::setValue('url_android', 'https://mtsn11majalengka.sch.id/cbtapp.apk');
         Setting::setValue('version_pc', 'v1.0.0');
         Setting::setValue('url_pc', 'https://mtsn11majalengka.sch.id/cbtapp.exe');
+        Setting::setValue('latest_version', '4.2.3');
+        Setting::setValue('latest_version_code', 6);
+        Setting::setValue('operational_start_date', '2026-01-01 00:00:00');
+        Setting::setValue('operational_end_date', '2026-12-31 23:59:59');
+        Setting::setValue('daily_start_hour', 0);
+        Setting::setValue('daily_start_minute', 0);
+        Setting::setValue('daily_end_hour', 23);
+        Setting::setValue('daily_end_minute', 59);
     }
 
     /**
@@ -44,7 +51,7 @@ class CbtBackendTest extends TestCase
     public function test_landing_page_allows_authorized_user_agents(): void
     {
         $response = $this->withHeaders([
-            'User-Agent' => 'AdityAs13xCBTAppMTsN11Majalengka_V423',
+            'User-Agent' => 'ATADevLabs_CBTAppMTsN11Majalengka',
         ])->get('/');
 
         $response->assertRedirect(route('verify-security'));

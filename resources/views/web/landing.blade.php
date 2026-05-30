@@ -226,7 +226,7 @@
 
             <div class="footer-note">
                 <i class="bi bi-shield-check"></i>
-                <span>Lingkungan ujian diawasi &amp; terproteksi CBT-App v4.2.3</span>
+                <span>Lingkungan ujian diawasi &amp; terproteksi CBT-App v{{ \App\Models\Setting::getValue('latest_version', '4.2.4') }}</span>
             </div>
 
         </div>

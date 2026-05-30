@@ -12,12 +12,8 @@ class LandingController extends Controller
      * Daftar User-Agent resmi yang diizinkan mengakses portal ujian.
      */
     private array $allowedUAs = [
-        'AdityAs13xCBTAppMTsN11Majalengka_V423', // Android v4.2.3 (TERBARU)
-        'AdityAs13xCBTAppMTsN11Majalengka_V422', // Android v4.2.2 (diizinkan agar muncul alert update)
-        'AdityAs13xCBTAppMTsN11Majalengka',      // Versi lama (diizinkan masuk agar muncul alert update)
-        'cbt-exam-browser',
-        'CBTAppMTsN11Majalengka',
-        'CBT-App-PC/1.0',
+        'ATADevLabs_CBTAppMTsN11Majalengka', // Android v4.2.4 (TERBARU)
+        'CBT-App-PC/1.0',                    // Aplikasi Windows
     ];
 
     /**
@@ -26,14 +22,11 @@ class LandingController extends Controller
     private const CBT_SECRET = 'AdityAs13_CBTApp_MTsN11Majalengka';
 
     /**
-     * GET /
-     * Gerbang utama: periksa jam operasional, validasi UA, lalu arahkan.
+     * Helper: cek apakah server saat ini sedang buka berdasarkan pengaturan jam & tanggal.
+     * Dipanggil di semua endpoint agar tidak bisa di-bypass langsung via URL.
      */
-    public function index(Request $request)
+    private function checkOperational(): array
     {
-        $downloadLink = Setting::getValue('download_url', 'https://play.google.com/store/apps/details?id=com.mtsn11.cbtapp');
-
-        // ─── Pemeriksaan Rentang Tanggal & Jam Operasional ───
         $now = new \DateTime('now', new \DateTimeZone('Asia/Jakarta'));
 
         $operationalStart = Setting::getValue('operational_start_date', '2026-01-01 00:00:00');
@@ -46,10 +39,10 @@ class LandingController extends Controller
         $startDt = new \DateTime($operationalStart, new \DateTimeZone('Asia/Jakarta'));
         $endDt   = new \DateTime($operationalEnd,   new \DateTimeZone('Asia/Jakarta'));
 
-        $isOpen      = false;
-        $statusMsg   = 'Server Sedang Ditutup';
-        $statusDetail= 'Ujian belum dimulai atau sudah berakhir.';
-        $targetTime  = '';
+        $isOpen       = false;
+        $statusMsg    = 'Server Sedang Ditutup';
+        $statusDetail = 'Ujian belum dimulai atau sudah berakhir.';
+        $targetTime   = '';
 
         if ($now >= $startDt && $now <= $endDt) {
             $currentMins = (int)$now->format('H') * 60 + (int)$now->format('i');
@@ -82,36 +75,60 @@ class LandingController extends Controller
             }
         }
 
-        // ─── Jika server TUTUP: tampilkan halaman maintenance ───
-        if (! $isOpen) {
-            return view('web.maintenance', compact(
-                'statusMsg', 'statusDetail', 'targetTime', 'downloadLink'
-            ));
+        return compact('isOpen', 'statusMsg', 'statusDetail', 'targetTime');
+    }
+
+    /**
+     * GET /
+     * Gerbang utama: periksa jam operasional, validasi UA, lalu arahkan.
+     */
+    public function index(Request $request)
+    {
+        $downloadLink = Setting::getValue('download_url', 'https://play.google.com/store/apps/details?id=com.mtsn11.cbtapp');
+
+        $operational = $this->checkOperational();
+
+        if (! $operational['isOpen']) {
+            return view('web.maintenance', [
+                'statusMsg'   => $operational['statusMsg'],
+                'statusDetail'=> $operational['statusDetail'],
+                'targetTime'  => $operational['targetTime'],
+                'downloadLink'=> $downloadLink,
+            ]);
         }
 
-        // ─── Jika server BUKA: validasi User-Agent ───
         $userAgent = $request->header('User-Agent', '');
 
         if (empty($userAgent) || ! $this->isValidUA($userAgent)) {
             return $this->showBlockedPage($downloadLink);
         }
 
-        // UA valid → arahkan ke terminal verifikasi keamanan
         return redirect()->route('verify-security');
     }
 
     /**
      * GET /verify-security
-     * Tampilkan terminal CLI retro (screen pinning trigger, audio beep, dll.).
+     * Terminal CLI verifikasi keamanan (screen pinning, audio beep, dll.).
+     * FIX: Cek jam operasional agar tidak bisa diakses langsung saat server tutup.
      */
     public function verifySecurity(Request $request)
     {
-        $userAgent     = $request->header('User-Agent', '');
-        $downloadLink  = Setting::getValue('download_url', 'https://play.google.com/store/apps/details?id=com.mtsn11.cbtapp');
+        $downloadLink = Setting::getValue('download_url', 'https://play.google.com/store/apps/details?id=com.mtsn11.cbtapp');
 
-        // V423 adalah versi terbaru yang sah; V422 akan muncul alert update
-        $isNewAndroidApp = str_contains($userAgent, 'AdityAs13xCBTAppMTsN11Majalengka_V423')
-                        || str_contains($userAgent, 'AdityAs13xCBTAppMTsN11Majalengka_V422');
+        // FIX: Jika server tutup, kembalikan ke halaman maintenance
+        $operational = $this->checkOperational();
+        if (! $operational['isOpen']) {
+            return view('web.maintenance', [
+                'statusMsg'   => $operational['statusMsg'],
+                'statusDetail'=> $operational['statusDetail'],
+                'targetTime'  => $operational['targetTime'],
+                'downloadLink'=> $downloadLink,
+            ]);
+        }
+
+        $userAgent = $request->header('User-Agent', '');
+
+        $isNewAndroidApp = str_contains($userAgent, 'ATADevLabs_CBTAppMTsN11Majalengka');
         $isDesktopVersion = str_contains($userAgent, 'CBT-App-PC/1.0');
 
         return view('web.verify_security', compact(
@@ -122,35 +139,35 @@ class LandingController extends Controller
     /**
      * GET /portal
      * Halaman pemilihan akses asesmen (sumatif & madrasah).
+     * FIX: Tambah cek jam operasional agar tidak bisa di-bypass via URL langsung.
      */
     public function portal(Request $request)
     {
-        $userAgent    = $request->header('User-Agent', '');
         $downloadLink = Setting::getValue('download_url', 'https://play.google.com/store/apps/details?id=com.mtsn11.cbtapp');
 
-        // Validasi ulang UA — cegah bypass langsung ke /portal via browser
+        // FIX: Cek jam operasional juga di portal
+        $operational = $this->checkOperational();
+        if (! $operational['isOpen']) {
+            return view('web.maintenance', [
+                'statusMsg'   => $operational['statusMsg'],
+                'statusDetail'=> $operational['statusDetail'],
+                'targetTime'  => $operational['targetTime'],
+                'downloadLink'=> $downloadLink,
+            ]);
+        }
+
+        $userAgent = $request->header('User-Agent', '');
+
         if (empty($userAgent) || ! $this->isValidUA($userAgent)) {
             return $this->showBlockedPage($downloadLink);
         }
 
-        // Deteksi versi lama untuk warning popup
-        $allowedApp    = 'AdityAs13xCBTAppMTsN11Majalengka_V422';
-        $newAllowedApp = 'AdityAs13xCBTAppMTsN11Majalengka_V423';
-        $oldApp        = 'AdityAs13xCBTAppMTsN11Majalengka';
-        $cbtExamBrowser= 'cbt-exam-browser';
-
+        // Deteksi versi untuk warning popup
         $showAlert    = false;
         $alertMessage = '';
 
-        if (str_contains($userAgent, $oldApp)
-            && ! str_contains($userAgent, $allowedApp)
-            && ! str_contains($userAgent, $newAllowedApp)
-        ) {
-            $showAlert    = true;
-            $alertMessage = 'Versi aplikasi Anda sudah usang. Silakan unduh versi terbaru v4.2.3 untuk dapat mengikuti ujian.';
-        } elseif (str_contains($userAgent, $cbtExamBrowser)) {
-            $showAlert    = true;
-            $alertMessage = 'Anda terdeteksi menggunakan CBT Exam Browser. Kami rekomendasikan menggunakan Aplikasi resmi CBT App.';
+        if (str_contains($userAgent, 'ATADevLabs_CBTAppMTsN11Majalengka')) {
+            // Versi terbaru — tidak ada alert
         }
 
         $sumatifActive  = (bool) Setting::getValue('asesmen_sumatif_active', true);
