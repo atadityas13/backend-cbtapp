@@ -64,7 +64,7 @@ class PointsController extends Controller
             if ($registration->points < $actualCost) {
                 return response()->json([
                     'status' => 'error',
-                    'message' => "Poin Kepatuhan tidak cukup! Butuh {$actualCost} Poin Kepatuhan, Saldo Anda: {$registration->points} Poin."
+                    'message' => "Poin Proteksi tidak cukup! Butuh {$actualCost} Poin Proteksi, Saldo Anda: {$registration->points} Poin."
                 ], 400);
             }
 
