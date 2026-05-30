@@ -33,8 +33,10 @@ class FcmController extends Controller
         $existingDevice = FcmRegistration::where('android_id', $androidId)->first();
  
         if ($existingDevice) {
+            $isUpdate = filter_var($request->input('is_update'), FILTER_VALIDATE_BOOLEAN);
+
             // Jika nama berbeda, blokir registrasi untuk mencegah joki/ganti akun
-            if (strcasecmp($existingDevice->full_name, $fullName) !== 0) {
+            if (strcasecmp($existingDevice->full_name, $fullName) !== 0 && !$isUpdate) {
                 return response()->json([
                     'status' => 'error',
                     'message' => "Gagal: Perangkat ini sudah terdaftar atas nama: '{$existingDevice->full_name}'. Satu HP hanya boleh mendaftar 1 Nama Siswa!"
@@ -49,11 +51,16 @@ class FcmController extends Controller
                 'device_model'    => !empty($deviceModel) ? $deviceModel : $existingDevice->device_model,
                 'android_version' => !empty($androidVersion) ? $androidVersion : $existingDevice->android_version,
             ];
+
+            if ($isUpdate) {
+                $updateData['full_name'] = $fullName;
+            }
+
             $existingDevice->update($updateData);
  
             return response()->json([
                 'status' => 'success',
-                'message' => 'Token FCM berhasil diperbarui.'
+                'message' => $isUpdate ? 'Nama siswa berhasil diperbarui.' : 'Token FCM berhasil diperbarui.'
             ]);
         }
  
