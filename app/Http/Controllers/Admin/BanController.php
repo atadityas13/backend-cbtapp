@@ -41,13 +41,15 @@ class BanController extends Controller
                 $identifier = $row->android_id ?: $row->student_name;
                 
                 if (!isset($grouped[$identifier])) {
-                    $grouped[$identifier] = $row;
-                    $grouped[$identifier]->total_bans = 0;
-                    $grouped[$identifier]->history = [];
+                    $parent = clone $row;
+                    $parent->total_bans = 0;
+                    $parent->history = [];
+                    $grouped[$identifier] = $parent;
                 }
                 
                 $grouped[$identifier]->total_bans++;
-                $grouped[$identifier]->history[] = $row;
+                $historyItem = clone $row;
+                $grouped[$identifier]->history[] = $historyItem;
             }
             
             // Manual pagination untuk collection hasil grouping

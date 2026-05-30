@@ -181,8 +181,12 @@
                             @endif
                         </td>
                         <td style="font-size: 13px; color: var(--text-secondary);">
-                            {{ $violation->created_at->format('d M Y, H:i') }} WIB
-                            <div style="font-size: 11px; color: var(--text-muted);">{{ $violation->created_at->diffForHumans() }}</div>
+                            @if($violation->created_at)
+                                {{ $violation->created_at->format('d M Y, H:i') }} WIB
+                                <div style="font-size: 11px; color: var(--text-muted);">{{ $violation->created_at->diffForHumans() }}</div>
+                            @else
+                                -
+                            @endif
                         </td>
                         <td class="text-right">
                             @if($violation->status === 'BANNED')
@@ -309,7 +313,7 @@
                             <div style="background-color: rgba(7, 11, 19, 0.4); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 16px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
                                 <div style="text-align: left;">
                                     <div style="font-weight: 700; color: var(--danger); margin-bottom: 4px;">{{ $hist->reason }}</div>
-                                    <small style="color: var(--text-muted);"><i class="bi bi-calendar-event"></i> {{ $hist->created_at->format('d M Y, H:i') }} WIB</small>
+                                    <small style="color: var(--text-muted);"><i class="bi bi-calendar-event"></i> {{ $hist->created_at ? $hist->created_at->format('d M Y, H:i') . ' WIB' : '-' }}</small>
                                     @if($index === 0)
                                         <span class="badge badge-success" style="font-size: 0.75em; margin-left: 8px;">Terbaru</span>
                                     @endif
