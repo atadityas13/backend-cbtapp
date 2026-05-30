@@ -1,6 +1,6 @@
 @extends('layouts.admin')
  
-@yield('title', 'Manajemen Media')
+@section('title', 'Manajemen Media')
  
 @section('header_title', 'Manajemen File Media')
  

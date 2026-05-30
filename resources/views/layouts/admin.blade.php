@@ -550,8 +550,25 @@
             .menu-toggle {
                 display: block;
             }
+            .main-header {
+                padding: 0 16px;
+                height: 60px;
+            }
+            .header-title {
+                font-size: 15px;
+                max-width: 55%;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .btn-logout span {
+                display: none; /* Hide logout text on mobile devices */
+            }
+            .btn-logout {
+                padding: 8px 10px;
+            }
             .content {
-                padding: 20px;
+                padding: 16px;
             }
         }
     </style>

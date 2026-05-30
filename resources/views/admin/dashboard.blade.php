@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@yield('title', 'Dashboard')
+@section('title', 'Dashboard')
 
 @section('header_title', 'Ringkasan Dashboard')
 

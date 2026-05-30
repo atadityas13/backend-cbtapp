@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@yield('title', 'Pengaturan Sistem')
+@section('title', 'Pengaturan Sistem')
 
 @section('header_title', 'Konfigurasi CBT & Kelola Proktor')
 

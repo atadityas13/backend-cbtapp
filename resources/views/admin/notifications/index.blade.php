@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@yield('title', 'Kirim Notifikasi Push')
+@section('title', 'Kirim Notifikasi Push')
 
 @section('header_title', 'Kirim Firebase Push Notification')
 

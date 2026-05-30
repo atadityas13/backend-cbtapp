@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@yield('title', 'Daftar Pelanggaran')
+@section('title', 'Daftar Pelanggaran')
 
 @section('header_title', 'Pelanggaran & Log Ban Siswa')
 
