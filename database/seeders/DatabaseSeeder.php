@@ -44,6 +44,7 @@ class DatabaseSeeder extends Seeder
             // ── Setting untuk endpoint /api/check_update (Android & Windows App) ──
             'download_url'            => 'https://play.google.com/store/apps/details?id=com.mtsn11.cbtapp',
             'latest_version'          => '4.2.3',
+            'latest_version_code'     => 6,
             'release_notes'           => "Pembaruan Sistem v4.2.3:\n\n• Migrasi backend ke Laravel 11.\n• Web Audio API beep sintetik offline.\n• Perbaikan alur verifikasi keamanan.",
             'force_update'            => false,
         ];

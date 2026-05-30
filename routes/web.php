@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\BanController;
 use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\MediaController;
+use App\Http\Controllers\Admin\VersionController;
 use App\Http\Controllers\Web\LandingController;
 use Illuminate\Support\Facades\Route;
  
@@ -57,6 +58,10 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     // Pengaturan Sistem Ujian, Proktor Ganda, & Iklan
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
     Route::post('/settings/update', [SettingsController::class, 'updateSettings'])->name('settings.update');
+    
+    // Manajemen Pembaruan Versi Aplikasi
+    Route::get('/versions', [VersionController::class, 'index'])->name('versions.index');
+    Route::post('/versions/update', [VersionController::class, 'update'])->name('versions.update');
     
     // Kelola Proktor (Hanya untuk Role Admin/Super Admin)
     Route::middleware(['can:manage-proctors'])->group(function () {

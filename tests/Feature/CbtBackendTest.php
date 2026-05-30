@@ -47,8 +47,7 @@ class CbtBackendTest extends TestCase
             'User-Agent' => 'AdityAs13xCBTAppMTsN11Majalengka_V423',
         ])->get('/');
 
-        $response->assertStatus(200);
-        $response->assertSee('PORTAL CBT ONLINE');
+        $response->assertRedirect(route('verify-security'));
     }
 
     /**
@@ -69,5 +68,58 @@ class CbtBackendTest extends TestCase
         $response->assertJson([
             'latest_version' => '4.2.3'
         ]);
+    }
+
+    /**
+     * Test guest is redirected to login when trying to access version management
+     */
+    public function test_guest_cannot_access_version_management(): void
+    {
+        $response = $this->get('/admin/versions');
+        $response->assertRedirect('/login');
+    }
+
+    /**
+     * Test authenticated admin can access version management page
+     */
+    public function test_admin_can_access_version_management(): void
+    {
+        $user = User::create([
+            'name' => 'Test Admin',
+            'username' => 'testadmin',
+            'password' => bcrypt('password'),
+            'role' => 'admin'
+        ]);
+
+        $response = $this->actingAs($user)->get('/admin/versions');
+        $response->assertStatus(200);
+        $response->assertSee('Pembaruan Aplikasi Siswa');
+    }
+
+    /**
+     * Test admin can update version settings successfully
+     */
+    public function test_admin_can_update_version_settings(): void
+    {
+        $user = User::create([
+            'name' => 'Test Admin',
+            'username' => 'testadmin',
+            'password' => bcrypt('password'),
+            'role' => 'admin'
+        ]);
+
+        $response = $this->actingAs($user)->post('/admin/versions/update', [
+            'latest_version' => '4.2.4',
+            'latest_version_code' => 7,
+            'download_url' => 'https://play.google.com/store/apps/details?id=com.mtsn11.cbtapp',
+            'release_notes' => 'New security patch',
+            'force_update' => 1
+        ]);
+
+        $response->assertRedirect(route('admin.versions.index'));
+        
+        $this->assertEquals('4.2.4', Setting::getValue('latest_version'));
+        $this->assertEquals(7, Setting::getValue('latest_version_code'));
+        $this->assertTrue(Setting::getValue('force_update'));
     }
 }

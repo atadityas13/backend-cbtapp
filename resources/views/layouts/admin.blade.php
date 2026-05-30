@@ -597,6 +597,12 @@
                     <span>Manajemen File Media</span>
                 </a>
             </li>
+            <li class="sidebar-item {{ Route::is('admin.versions.*') ? 'active' : '' }}">
+                <a href="{{ route('admin.versions.index') }}">
+                    <i class="bi bi-arrow-up-circle-fill"></i>
+                    <span>Manajemen Versi</span>
+                </a>
+            </li>
             <li class="sidebar-item {{ Route::is('admin.settings.*') ? 'active' : '' }}">
                 <a href="{{ route('admin.settings.index') }}">
                     <i class="bi bi-gear-fill"></i>
