@@ -248,13 +248,19 @@
             <div class="form-section-title">2. Isi Konten Notifikasi</div>
             
             <div class="form-group">
-                <label for="judul" class="form-label">Judul Notifikasi</label>
-                <input type="text" name="judul" id="judul" class="form-control" placeholder="Contoh: Mulai Ujian Jam Ke-1 Sekarang" required oninput="updatePreview()">
+                <label for="judul" class="form-label">Judul Notifikasi (Gunakan `|` untuk merotasi judul secara berurutan)</label>
+                <input type="text" name="judul" id="judul" class="form-control" placeholder="Contoh: Mulai Sesi 1 | Sesi Ujian Aktif | Ujian Telah Dibuka" required oninput="updatePreview()">
+                <small style="color: var(--text-muted); display: block; margin-top: 4px;">
+                    Pisahkan dengan tanda `|` agar pesan dirotasi bergiliran setiap harinya agar tidak monoton.
+                </small>
             </div>
 
             <div class="form-group">
-                <label for="deskripsi" class="form-label">Deskripsi / Isi Pesan</label>
-                <textarea name="deskripsi" id="deskripsi" class="form-control" rows="4" placeholder="Masukkan isi notifikasi ujian..." required oninput="updatePreview()"></textarea>
+                <label for="deskripsi" class="form-label">Deskripsi / Isi Pesan (Gunakan `|` untuk merotasi isi secara berurutan)</label>
+                <textarea name="deskripsi" id="deskripsi" class="form-control" rows="4" placeholder="Contoh: Selamat menempuh ujian. | Harap tertib saat ujian. | Masuk ke aplikasi CBT." required oninput="updatePreview()"></textarea>
+                <small style="color: var(--text-muted); display: block; margin-top: 4px;">
+                    Samakan jumlah pilihan deskripsi dengan jumlah pilihan judul di atas.
+                </small>
             </div>
 
             <!-- Section 3: Penjadwalan Rutin -->
@@ -314,28 +320,38 @@
                 </div>
             </div>
 
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="custom_sound" class="form-label">Pilih Suara / Sound Internal</label>
-                    <select name="custom_sound" id="custom_sound" class="form-control">
-                        <option value="">default</option>
-                        <optgroup label="Suara Bawaan Aplikasi">
-                            <option value="mulai_ujian">Mulai Ujian</option>
-                            <option value="belajar">Belajar</option>
-                        </optgroup>
-                        @if(!empty($uploadedAudioList))
-                            <optgroup label="Hasil Upload Sebelumnya">
-                                @foreach($uploadedAudioList as $audio)
-                                    <option value="{{ asset('uploads/audio/' . $audio) }}">{{ $audio }}</option>
-                                @endforeach
-                            </optgroup>
-                        @endif
-                    </select>
+            <div class="form-group">
+                <label class="form-label">Pilih Daftar Suara / Audio (Akan Diacak Secara Pintar Tanpa Duplikat Berurutan)</label>
+                <div class="day-checkboxes" style="grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));">
+                    <label class="day-item">
+                        <input type="checkbox" name="custom_sound[]" value="default" class="sound-cb" checked>
+                        <span>default</span>
+                    </label>
+                    <label class="day-item">
+                        <input type="checkbox" name="custom_sound[]" value="mulai_ujian" class="sound-cb">
+                        <span>Mulai Ujian</span>
+                    </label>
+                    <label class="day-item">
+                        <input type="checkbox" name="custom_sound[]" value="belajar" class="sound-cb">
+                        <span>Belajar</span>
+                    </label>
+                    @if(!empty($uploadedAudioList))
+                        @foreach($uploadedAudioList as $audio)
+                            <label class="day-item" title="{{ $audio }}">
+                                <input type="checkbox" name="custom_sound[]" value="{{ asset('uploads/audio/' . $audio) }}" class="sound-cb">
+                                <span>{{ Str::limit($audio, 12) }}</span>
+                            </label>
+                        @endforeach
+                    @endif
                 </div>
-                <div class="form-group">
-                    <label for="audio_file" class="form-label">Atau Unggah File Suara Baru (.mp3)</label>
-                    <input type="file" name="audio_file" id="audio_file" class="form-control" accept="audio/mpeg">
-                </div>
+                <small style="color: var(--text-muted); display: block; margin-top: 6px;">
+                    <i class="bi bi-info-circle"></i> Anda bisa mencentang beberapa audio kustom sekaligus untuk merotasi suara alarm secara pintar setiap harinya.
+                </small>
+            </div>
+
+            <div class="form-group">
+                <label for="audio_file" class="form-label">Atau Unggah File Suara Baru (.mp3) - Otomatis Ditambahkan ke Daftar Suara Aktif</label>
+                <input type="file" name="audio_file" id="audio_file" class="form-control" accept="audio/mpeg">
             </div>
 
             <div class="form-group">
@@ -487,9 +503,18 @@
                                     {{ $sched->category }}
                                 </span>
                             </div>
-                            <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px; word-break: break-all;">
+                            <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px; word-break: break-all; white-space: normal;">
                                 <i class="bi bi-volume-up-fill"></i> 
-                                {{ $sched->custom_sound ? basename($sched->custom_sound) : 'default' }}
+                                @if(is_array($sched->custom_sound))
+                                    @php
+                                        $soundNames = array_map(function($s) {
+                                            return $s === 'default' ? 'default' : basename($s);
+                                        }, $sched->custom_sound);
+                                    @endphp
+                                    {{ implode(', ', $soundNames) }}
+                                @else
+                                    {{ $sched->custom_sound ? basename($sched->custom_sound) : 'default' }}
+                                @endif
                             </div>
                         </td>
                         <td>

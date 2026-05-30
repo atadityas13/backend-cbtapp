@@ -64,14 +64,67 @@ class SendScheduledNotificationJob implements ShouldQueue
             }
 
             try {
-                Log::info("Sending Scheduled Notification ID {$schedule->id}: '{$schedule->judul}'");
-                $this->sendNotification($schedule);
+                // 1. Process Sequential Message (Round-Robin)
+                $titles = explode('|', $schedule->judul);
+                $descriptions = explode('|', $schedule->deskripsi);
+                
+                $totalOptions = count($titles);
+                $currentIndex = intval($schedule->last_sent_index ?? 0);
+                
+                if ($totalOptions > 1) {
+                    $judul = trim($titles[$currentIndex % $totalOptions]);
+                    
+                    // Match description at same index, fallback to index 0 if not set
+                    $descIndex = isset($descriptions[$currentIndex]) ? $currentIndex : 0;
+                    $deskripsi = trim($descriptions[$descIndex]);
+                    
+                    $nextIndex = ($currentIndex + 1) % $totalOptions;
+                } else {
+                    $judul = trim($schedule->judul);
+                    $deskripsi = trim($schedule->deskripsi);
+                    $nextIndex = 0;
+                }
 
-                // Update last sent timestamp
+                // 2. Process Smart Shuffle Audio (No Consecutive Repeat)
+                $sounds = $schedule->custom_sound ?? ['default'];
+                if (!is_array($sounds)) {
+                    $sounds = [$sounds];
+                }
+                if (empty($sounds)) {
+                    $sounds = ['default'];
+                }
+
+                $chosenSound = 'default';
+                if (count($sounds) > 1) {
+                    $lastSentSound = $schedule->last_sent_sound;
+                    // Filter out the sound played yesterday
+                    $availableSounds = array_filter($sounds, function($s) use ($lastSentSound) {
+                        return trim($s) !== trim($lastSentSound);
+                    });
+                    
+                    // Fallback to all if somehow all got filtered out
+                    if (empty($availableSounds)) {
+                        $availableSounds = $sounds;
+                    }
+                    
+                    $randomKey = array_rand($availableSounds);
+                    $chosenSound = $availableSounds[$randomKey];
+                } else if (!empty($sounds)) {
+                    $chosenSound = $sounds[0];
+                }
+
+                Log::info("Sending Scheduled Notification ID {$schedule->id}: Message option {$currentIndex}/{$totalOptions} -> '{$judul}' with sound: '{$chosenSound}'");
+
+                // Dispatch
+                $this->sendNotification($schedule, $judul, $deskripsi, $chosenSound);
+
+                // Update last sent timestamp & states
                 $schedule->update([
                     'last_sent_at' => Carbon::now(),
+                    'last_sent_index' => $nextIndex,
+                    'last_sent_sound' => $chosenSound,
                 ]);
-                Log::info("Successfully sent and updated last_sent_at for Schedule ID {$schedule->id}");
+                Log::info("Successfully sent and updated last_sent_at, next_index={$nextIndex}, sound={$chosenSound} for Schedule ID {$schedule->id}");
             } catch (\Throwable $e) {
                 Log::error("Failed to send scheduled notification ID {$schedule->id}: " . $e->getMessage(), [
                     'exception' => $e
@@ -83,16 +136,18 @@ class SendScheduledNotificationJob implements ShouldQueue
     /**
      * Send the actual Firebase Cloud Message payload
      */
-    private function sendNotification(CbtScheduledNotification $schedule): void
+    private function sendNotification(CbtScheduledNotification $schedule, string $judul, string $deskripsi, string $chosenSound): void
     {
-        $judul = $schedule->judul;
-        $deskripsi = $schedule->deskripsi;
+        if (app()->environment('testing')) {
+            Log::info("[TEST MODE] Mocked Firebase send successfully for Schedule ID: {$schedule->id}");
+            return;
+        }
+
         $topik = $schedule->topik ?? '';
         $fcmTokenTarget = $schedule->fcm_token ?? '';
         $gambarUrl = $schedule->gambar_url ?? '';
         $link = $schedule->link ?? '';
         $prioritas = strtoupper($schedule->prioritas ?? 'HIGH');
-        $customSound = $schedule->custom_sound ?? '';
         $category = $schedule->category ?? 'normal';
         $duration = strval($schedule->duration ?? '30');
 
@@ -100,12 +155,12 @@ class SendScheduledNotificationJob implements ShouldQueue
         $soundUrl = '';
         $soundInternal = 'default';
 
-        if (!empty($customSound)) {
-            if (filter_var($customSound, FILTER_VALIDATE_URL)) {
-                $soundUrl = $customSound;
+        if (!empty($chosenSound)) {
+            if (filter_var($chosenSound, FILTER_VALIDATE_URL)) {
+                $soundUrl = $chosenSound;
                 $soundInternal = 'default';
             } else {
-                $soundInternal = $customSound;
+                $soundInternal = $chosenSound;
                 $soundUrl = '';
             }
         }

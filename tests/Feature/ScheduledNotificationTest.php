@@ -175,4 +175,41 @@ class ScheduledNotificationTest extends TestCase
         // Reset Carbon mock
         Carbon::setTestNow();
     }
+
+    /**
+     * Test round-robin message rotations and smart non-consecutive audio shuffling
+     */
+    public function test_job_handles_message_rotation_and_smart_shuffle_sound(): void
+    {
+        // Mock current time to Tuesday 08:30 WIB
+        Carbon::setTestNow(Carbon::create(2026, 6, 2, 8, 30, 0, 'Asia/Jakarta'));
+
+        $schedule = CbtScheduledNotification::create([
+            'judul' => 'Sesi 1 | Sesi Ujian Aktif | Ujian Telah Dibuka',
+            'deskripsi' => 'Selamat menempuh ujian. | Harap tertib saat ujian. | Masuk ke aplikasi CBT.',
+            'schedule_time' => '08:30',
+            'days_of_week' => ['Tuesday'],
+            'custom_sound' => ['soundA.mp3', 'soundB.mp3', 'soundC.mp3'],
+            'is_active' => true,
+            'last_sent_index' => 0,
+            'last_sent_sound' => 'soundA.mp3',
+        ]);
+
+        // Run the job
+        $job = new SendScheduledNotificationJob();
+        $job->handle();
+
+        $freshSchedule = $schedule->fresh();
+
+        // 1. Check round-robin index was advanced
+        // The first run should pick index 0, and set last_sent_index to 1 (for the next run)
+        $this->assertEquals(1, $freshSchedule->last_sent_index);
+
+        // 2. Check smart shuffle selected sound is not the duplicate one ('soundA.mp3')
+        $this->assertNotEquals('soundA.mp3', $freshSchedule->last_sent_sound);
+        $this->assertContains($freshSchedule->last_sent_sound, ['soundB.mp3', 'soundC.mp3']);
+
+        // Reset Carbon mock
+        Carbon::setTestNow();
+    }
 }

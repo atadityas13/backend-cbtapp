@@ -77,7 +77,8 @@ class ScheduledNotificationController extends Controller
             'gambar_url'          => 'nullable|string',
             'link'                => 'nullable|string',
             'prioritas'           => 'required|in:high,normal',
-            'custom_sound'        => 'nullable|string',
+            'custom_sound'        => 'nullable|array',
+            'custom_sound.*'      => 'string',
             'category'            => 'required|string|max:50',
             'duration'            => 'nullable|integer|min:5|max:300',
             'schedule_time'       => 'required|string|regex:/^\d{2}:\d{2}$/',
@@ -85,14 +86,22 @@ class ScheduledNotificationController extends Controller
             'days_of_week.*'      => 'string',
         ]);
 
-        $customSound = $validated['custom_sound'] ?? '';
+        $customSounds = $validated['custom_sound'] ?? [];
+        if (!is_array($customSounds)) {
+            $customSounds = [];
+        }
 
-        // 1. Logika Upload Audio (Jika Ada)
+        // 1. Logika Upload Audio (Jika Ada) - Tambahkan ke daftar suara kustom
         if ($request->hasFile('audio_file') && $request->file('audio_file')->isValid()) {
             $audioFile = $request->file('audio_file');
             $safeName = time() . "_voice_" . preg_replace("/[^a-zA-Z0-9\._-]/", "_", $audioFile->getClientOriginalName());
             $audioFile->move(public_path('uploads/audio'), $safeName);
-            $customSound = asset('uploads/audio/' . $safeName);
+            $customSounds[] = asset('uploads/audio/' . $safeName);
+        }
+
+        // Jika tidak ada audio terpilih sama sekali, pasang default
+        if (empty($customSounds)) {
+            $customSounds = ['default'];
         }
 
         // 2. Logika Upload Gambar (Jika Ada)
@@ -113,7 +122,7 @@ class ScheduledNotificationController extends Controller
             'gambar_url'    => $gambarUrl ?: null,
             'link'          => $validated['link'] ?? null,
             'prioritas'     => $validated['prioritas'],
-            'custom_sound'  => $customSound ?: null,
+            'custom_sound'  => $customSounds, // Auto-casted to JSON array!
             'category'      => $validated['category'],
             'duration'      => intval($validated['duration'] ?? 30),
             'schedule_time' => $validated['schedule_time'],

@@ -23,11 +23,14 @@ class CbtScheduledNotification extends Model
         'days_of_week',
         'is_active',
         'last_sent_at',
+        'last_sent_index',
+        'last_sent_sound',
     ];
 
     protected $casts = [
         'duration' => 'integer',
         'days_of_week' => 'array',
+        'custom_sound' => 'array',
         'is_active' => 'boolean',
         'last_sent_at' => 'datetime',
     ];
