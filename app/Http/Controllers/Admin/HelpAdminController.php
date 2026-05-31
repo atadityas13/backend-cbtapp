@@ -12,12 +12,21 @@ class HelpAdminController extends Controller
     /**
      * Display all active help tickets (PENDING or ANSWERED)
      */
-    public function index()
+    public function index(Request $request)
     {
         $helps = CbtBantuanProktor::whereIn('status', ['PENDING', 'ANSWERED'])
             ->orderBy('status', 'asc') // PENDING first
             ->orderBy('updated_at', 'desc')
             ->get();
+
+        // Jika dipanggil via AJAX polling dari dashboard (smart polling),
+        // kembalikan JSON ringkas saja — tanpa memuat ulang halaman
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'pending_count' => $helps->where('status', 'PENDING')->count(),
+                'total_count'   => $helps->count(),
+            ]);
+        }
 
         return view('admin.help.index', compact('helps'));
     }

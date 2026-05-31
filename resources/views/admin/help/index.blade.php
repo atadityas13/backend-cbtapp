@@ -379,6 +379,17 @@
 </div>
 
 <script>
+    // ──────────────────────────────────────────────
+    // STATE TRACKING
+    // ──────────────────────────────────────────────
+    let isTyping = false;          // true saat proktor sedang mengetik di form
+    let anyFormOpen = false;       // true saat ada form reply yang sedang terbuka
+    let lastKnownCount = {{ $helps->count() }};  // jumlah tiket saat halaman dimuat
+    let pollInterval = null;
+
+    // ──────────────────────────────────────────────
+    // TOGGLE FORM BALAS
+    // ──────────────────────────────────────────────
     function toggleReplyForm(id) {
         const form = document.getElementById('replyForm-' + id);
         const actions = document.getElementById('actions-' + id);
@@ -386,64 +397,129 @@
         if (form.style.display === 'block') {
             form.style.display = 'none';
             actions.style.display = 'flex';
+            anyFormOpen = false;
         } else {
             form.style.display = 'block';
             actions.style.display = 'none';
-            form.querySelector('textarea').focus();
+            anyFormOpen = true;
+            const ta = form.querySelector('textarea');
+            ta.focus();
         }
     }
 
-    // Pemutar Suara Chime Retro-Futuristik Real-Time saat ada PENDING baru
+    // ──────────────────────────────────────────────
+    // PROTEKSI DOUBLE-SUBMIT
+    // ──────────────────────────────────────────────
+    function guardForm(formEl) {
+        formEl.addEventListener('submit', function(e) {
+            const btn = formEl.querySelector('button[type="submit"]');
+            if (btn.disabled) {
+                e.preventDefault();
+                return;
+            }
+            btn.disabled = true;
+            btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Mengirim...';
+        });
+    }
+
+    // ──────────────────────────────────────────────
+    // CHIME AUDIO
+    // ──────────────────────────────────────────────
     function playSciFiChime() {
         try {
             const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             
-            // Osc 1: Warm synth sine
             const osc1 = audioCtx.createOscillator();
             const gain1 = audioCtx.createGain();
             osc1.type = 'sine';
-            osc1.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
-            osc1.frequency.exponentialRampToValueAtTime(783.99, audioCtx.currentTime + 0.12); // G5
+            osc1.frequency.setValueAtTime(523.25, audioCtx.currentTime);
+            osc1.frequency.exponentialRampToValueAtTime(783.99, audioCtx.currentTime + 0.12);
             gain1.gain.setValueAtTime(0.12, audioCtx.currentTime);
             gain1.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.55);
             osc1.connect(gain1);
             gain1.connect(audioCtx.destination);
             
-            // Osc 2: High chime triangle
             const osc2 = audioCtx.createOscillator();
             const gain2 = audioCtx.createGain();
             osc2.type = 'triangle';
-            osc2.frequency.setValueAtTime(1046.50, audioCtx.currentTime + 0.08); // C6
+            osc2.frequency.setValueAtTime(1046.50, audioCtx.currentTime + 0.08);
             gain2.gain.setValueAtTime(0.08, audioCtx.currentTime + 0.08);
             gain2.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.65);
             osc2.connect(gain2);
             gain2.connect(audioCtx.destination);
             
-            osc1.start();
-            osc1.stop(audioCtx.currentTime + 0.55);
-            osc2.start(audioCtx.currentTime + 0.08);
-            osc2.stop(audioCtx.currentTime + 0.65);
+            osc1.start(); osc1.stop(audioCtx.currentTime + 0.55);
+            osc2.start(audioCtx.currentTime + 0.08); osc2.stop(audioCtx.currentTime + 0.65);
         } catch (e) {
             console.log("Audio Context blocked or not supported", e);
         }
     }
 
-    // Auto-refresh page every 15 seconds to check for new tickets
-    setTimeout(function() {
-        window.location.reload();
-    }, 15000);
+    // ──────────────────────────────────────────────
+    // SMART POLLING — hanya reload jika ada tiket baru
+    // DAN tidak ada form yang sedang terbuka/diketik
+    // ──────────────────────────────────────────────
+    function pollForNewTickets() {
+        // Jangan polling jika proktor sedang mengetik / form terbuka
+        if (isTyping || anyFormOpen) return;
 
-    // Main triggers
+        fetch(window.location.href, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data && typeof data.pending_count !== 'undefined') {
+                const newCount = data.pending_count;
+                if (newCount > lastKnownCount && !isTyping && !anyFormOpen) {
+                    playSciFiChime();
+                    // Tunggu sebentar agar proktor sempat membaca notifikasi chime
+                    setTimeout(() => {
+                        if (!isTyping && !anyFormOpen) {
+                            window.location.reload();
+                        }
+                    }, 2000);
+                }
+                lastKnownCount = newCount;
+            }
+        })
+        .catch(() => {
+            // Jika endpoint tidak mendukung JSON (blade biasa), fallback ke reload
+            // HANYA jika tidak ada form yang terbuka
+            if (!isTyping && !anyFormOpen) {
+                window.location.reload();
+            }
+        });
+    }
+
+    // ──────────────────────────────────────────────
+    // INISIALISASI
+    // ──────────────────────────────────────────────
     document.addEventListener("DOMContentLoaded", function() {
-        // Cek jika ada item berstatus PENDING
+        // Pasang proteksi double-submit ke semua form reply
+        document.querySelectorAll('.reply-form').forEach(guardForm);
+
+        // Pantau fokus textarea — pause polling saat mengetik
+        document.querySelectorAll('.form-control-help').forEach(function(ta) {
+            ta.addEventListener('focus', function() { isTyping = true; });
+            ta.addEventListener('blur',  function() {
+                // Beri jeda 3 detik setelah kehilangan fokus sebelum polling aktif kembali
+                setTimeout(() => { isTyping = false; }, 3000);
+            });
+            ta.addEventListener('input', function() { isTyping = true; });
+        });
+
+        // Mainkan chime jika ada tiket PENDING saat halaman dimuat
         const pendingItems = document.querySelectorAll('.help-card.pending');
         if (pendingItems.length > 0) {
-            // Mainkan bel peringatan dengan interaksi klik pertama / interaksi
             document.body.addEventListener('click', function playOnce() {
                 playSciFiChime();
                 document.body.removeEventListener('click', playOnce);
             }, { once: true });
         }
+
+        // Mulai polling setiap 20 detik (lebih longgar dari 15 agar tidak tergesa)
+        pollInterval = setInterval(pollForNewTickets, 20000);
     });
 </script>
+
 @endsection
