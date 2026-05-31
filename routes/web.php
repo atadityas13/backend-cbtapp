@@ -47,6 +47,11 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::get('/violations', [BanController::class, 'index'])->name('violations.index');
     Route::post('/violations/{id}/unban', [BanController::class, 'unban'])->name('violations.unban');
     Route::post('/violations/bulk-unban', [BanController::class, 'bulkUnban'])->name('violations.bulk-unban');
+
+    // Manajemen Bantuan / Keluhan Siswa (Real-Time Help System)
+    Route::get('/help', [\App\Http\Controllers\Admin\HelpAdminController::class, 'index'])->name('help.index');
+    Route::post('/help/{id}/reply', [\App\Http\Controllers\Admin\HelpAdminController::class, 'reply'])->name('help.reply');
+    Route::post('/help/{id}/resolve', [\App\Http\Controllers\Admin\HelpAdminController::class, 'resolve'])->name('help.resolve');
  
     // Manajemen File Media (Khusus Super Admin)
     Route::middleware(['can:manage-proctors'])->group(function () {

@@ -32,3 +32,9 @@ Route::post('/points/spend', [\App\Http\Controllers\Api\PointsController::class,
 Route::post('/points/topup', [\App\Http\Controllers\Api\PointsController::class, 'topupPoints']);
 Route::post('/points/topup/verify-iap', [\App\Http\Controllers\Api\PointsController::class, 'verifyIapPurchase']);
 
+// 5. Sistem Bantuan Siswa-Proktor
+Route::post('/help/send', [\App\Http\Controllers\Api\HelpController::class, 'sendHelp']);
+Route::post('/help/status', [\App\Http\Controllers\Api\HelpController::class, 'checkHelpStatus']);
+Route::post('/help/confirm', [\App\Http\Controllers\Api\HelpController::class, 'confirmHelpResolved']);
+
+

@@ -602,6 +602,12 @@
                     <span>Pelanggaran & Ban</span>
                 </a>
             </li>
+            <li class="sidebar-item {{ Route::is('admin.help.*') ? 'active' : '' }}">
+                <a href="{{ route('admin.help.index') }}">
+                    <i class="bi bi-chat-left-text-fill"></i>
+                    <span>Bantuan Siswa</span>
+                </a>
+            </li>
             <li class="sidebar-item {{ Route::is('admin.notifications.*') ? 'active' : '' }}">
                 <a href="{{ route('admin.notifications.index') }}">
                     <i class="bi bi-bell-fill"></i>
