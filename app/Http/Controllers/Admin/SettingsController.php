@@ -43,6 +43,34 @@ class SettingsController extends Controller
      */
     public function updateSettings(Request $request)
     {
+        // Convert datetime-local format (YYYY-MM-DDTHH:MM) into database standard (YYYY-MM-DD HH:MM:SS)
+        if ($request->has('operational_start_date') && !empty($request->input('operational_start_date'))) {
+            $request->merge([
+                'operational_start_date' => date('Y-m-d H:i:s', strtotime($request->input('operational_start_date'))),
+            ]);
+        }
+        if ($request->has('operational_end_date') && !empty($request->input('operational_end_date'))) {
+            $request->merge([
+                'operational_end_date' => date('Y-m-d H:i:s', strtotime($request->input('operational_end_date'))),
+            ]);
+        }
+
+        // Split daily_start_time (HH:MM) into daily_start_hour and daily_start_minute
+        if ($request->has('daily_start_time') && !empty($request->input('daily_start_time'))) {
+            $parts = explode(':', $request->input('daily_start_time'));
+            $request->merge([
+                'daily_start_hour' => intval($parts[0] ?? 0),
+                'daily_start_minute' => intval($parts[1] ?? 0),
+            ]);
+        }
+        if ($request->has('daily_end_time') && !empty($request->input('daily_end_time'))) {
+            $parts = explode(':', $request->input('daily_end_time'));
+            $request->merge([
+                'daily_end_hour' => intval($parts[0] ?? 0),
+                'daily_end_minute' => intval($parts[1] ?? 0),
+            ]);
+        }
+
         $validated = $request->validate([
             'operational_start_date'  => 'required|date_format:Y-m-d H:i:s',
             'operational_end_date'    => 'required|date_format:Y-m-d H:i:s|after:operational_start_date',

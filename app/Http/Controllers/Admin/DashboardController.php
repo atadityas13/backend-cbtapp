@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\CbtPelanggaran;
 use App\Models\FcmRegistration;
 use App\Models\Setting;
+use App\Models\CbtBantuanProktor;
 use Illuminate\Http\Request;
  
 class DashboardController extends Controller
@@ -16,6 +17,7 @@ class DashboardController extends Controller
         $totalDevices = FcmRegistration::count();
         $activeBans = CbtPelanggaran::where('status', 'BANNED')->count();
         $totalViolations = CbtPelanggaran::count();
+        $pendingHelps = CbtBantuanProktor::where('status', 'PENDING')->count();
         
         $sumatifActive = (bool) Setting::getValue('asesmen_sumatif_active', true);
         $madrasahActive = (bool) Setting::getValue('asesmen_madrasah_active', false);
@@ -28,6 +30,7 @@ class DashboardController extends Controller
             'totalDevices',
             'activeBans',
             'totalViolations',
+            'pendingHelps',
             'activeAssessment',
             'recentViolations'
         ));

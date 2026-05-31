@@ -43,7 +43,9 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::post('/students/{id}/update', [StudentController::class, 'update'])->name('students.update');
     Route::delete('/students/{id}', [StudentController::class, 'destroy'])->name('students.destroy');
  
-    // Manajemen Pelanggaran & Lepas Ban (Pardon)
+    // Halaman/Fungsi Pelanggaran
+    // Hapus Riwayat Pelanggaran (Hanya jika berstatus UNBANNED)
+    Route::delete('/violations/{id}', [BanController::class, 'destroy'])->name('violations.destroy');
     Route::get('/violations', [BanController::class, 'index'])->name('violations.index');
     Route::post('/violations/{id}/unban', [BanController::class, 'unban'])->name('violations.unban');
     Route::post('/violations/bulk-unban', [BanController::class, 'bulkUnban'])->name('violations.bulk-unban');

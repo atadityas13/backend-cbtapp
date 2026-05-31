@@ -263,7 +263,7 @@
             
             <div class="brand-section">
                 <div class="brand-logo">
-                    <i class="bi bi-shield-lock-fill"></i>
+                    <img src="{{ asset('assets/cbt_logo.png') }}" alt="CBT Logo" style="width: 32px; height: 32px; object-fit: contain;">
                 </div>
                 <h1 class="brand-title">CBT PANEL</h1>
                 <p class="brand-subtitle">Silakan masuk menggunakan akun Proktor atau Admin Anda.</p>

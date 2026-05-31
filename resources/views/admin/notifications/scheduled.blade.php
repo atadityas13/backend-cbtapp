@@ -400,11 +400,11 @@
             
             <div class="preview-card">
                 <div class="preview-header">
-                    <i class="bi bi-google-play"></i>
-                    <span>GOOGLE PLAY SERVICES &bull; SEKARANG</span>
+                    <img src="{{ asset('assets/cbt_logo.png') }}" alt="CBT Logo" style="width: 14px; height: 14px; object-fit: contain; vertical-align: middle;">
+                    <span style="font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase;">CBTApp &bull; SEKARANG</span>
                 </div>
                 <div class="preview-body">
-                    <div class="preview-app-title">CBT APP SERVICES</div>
+                    <div class="preview-app-title">CBTApp</div>
                     <div class="preview-notif-title" id="previewTitle">Judul Notifikasi Baru</div>
                     <div class="preview-notif-desc" id="previewDesc">Deskripsi ringkas notifikasi yang dikirimkan oleh proktor akan muncul di sini.</div>
                     
@@ -413,18 +413,7 @@
                     </div>
                 </div>
             </div>
-            
-            <div style="margin-top: 24px; background-color: rgba(16, 185, 129, 0.03); border: 1px dashed rgba(16, 185, 129, 0.2); border-radius: var(--radius-md); padding: 16px;">
-                <h5 style="color: var(--primary); font-size: 13px; font-weight: 700; margin-bottom: 8px;">
-                    <i class="bi bi-info-circle-fill"></i> TIPS INFRASTRUKTUR
-                </h5>
-                <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.5; margin: 0;">
-                    Scheduler Laravel perlu dijalankan agar pengiriman otomatis bekerja setiap menit. Daftarkan Cron Job berikut di hosting Anda:<br>
-                    <code style="display: block; background: #000; padding: 6px; border-radius: 4px; color: var(--primary); margin-top: 6px; font-size: 11px; word-break: break-all;">
-                        * * * * * cd {{ base_path() }} && php artisan schedule:run >> /dev/null 2>&1
-                    </code>
-                </p>
-            </div>
+
         </div>
     </div>
 

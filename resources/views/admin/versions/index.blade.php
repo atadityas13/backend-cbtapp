@@ -244,31 +244,6 @@
             </div>
         @endif
 
-        <!-- Integration Help Card -->
-        <div class="doc-card">
-            <h3 class="card-title" style="margin-bottom: 12px; font-size: 15px;">
-                <i class="bi bi-info-circle-fill" style="color: var(--primary);"></i> Bagaimana ini bekerja?
-            </h3>
-            <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 16px;">
-                Backend menyediakan endpoint aman di <code>/api/check_update.php</code>. Aplikasi Android Jetpack Compose di perangkat siswa melakukan perbandingan numerik yang cerdas:
-            </p>
-
-            <div class="code-container">
-                <span class="code-comment">// Logika pembanding di MainActivity.kt</span><br>
-                <span class="code-keyword">val</span> currentCode = packageInfo.versionCode<br>
-                <span class="code-keyword">val</span> latestCode = response.latest_version_code<br><br>
-                <span class="code-keyword">if</span> (latestCode > currentCode) {<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;<span class="code-comment">// Tampilkan dialog pembaruan</span><br>
-                &nbsp;&nbsp;&nbsp;&nbsp;<span class="code-keyword">val</span> isStrict = response.force_update<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;showUpdateDialog(isStrict, response.download_url)<br>
-                }
-            </div>
-            
-            <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.5; margin-top: 16px; border-top: 1px solid var(--border-color); padding-top: 12px;">
-                <i class="bi bi-shield-check" style="color: var(--primary);"></i> <strong>Aman & Kompatibel:</strong> Mengubah nama versi eksternal (seperti <code>4.2.3</code>) tidak akan memicu dialog update berulang jika angka kode versi (<code>versionCode</code>) tetap sama.
-            </p>
-        </div>
-
     </div>
 
 </div>

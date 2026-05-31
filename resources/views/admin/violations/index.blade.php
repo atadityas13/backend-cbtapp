@@ -89,6 +89,95 @@
         color: #000;
         box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
     }
+
+    .btn-delete-history {
+        background-color: rgba(239, 68, 68, 0.12);
+        color: var(--danger);
+        border: 1px solid rgba(239, 68, 68, 0.2);
+        padding: 6px 12px;
+        border-radius: var(--radius-sm);
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: var(--transition);
+    }
+
+    .btn-delete-history:hover {
+        background-color: var(--danger);
+        color: #fff;
+        box-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+    }
+
+    /* Premium Cyberpunk Emerald Pagination Styling */
+    .pagination-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 24px;
+        padding-top: 20px;
+        border-top: 1px solid var(--border-color);
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .pagination-container ul.pagination {
+        display: flex;
+        padding-left: 0;
+        list-style: none;
+        border-radius: var(--radius-md);
+        gap: 6px;
+        margin: 0;
+        align-items: center;
+    }
+
+    .pagination-container li.page-item {
+        margin: 0;
+    }
+
+    .pagination-container .page-link {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 36px;
+        height: 36px;
+        padding: 0 12px;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-secondary);
+        background-color: var(--bg-surface);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        text-decoration: none;
+        transition: var(--transition);
+    }
+
+    .pagination-container .page-item:hover .page-link {
+        background-color: var(--bg-base);
+        color: var(--text-primary);
+        border-color: var(--primary);
+    }
+
+    .pagination-container .page-item.active .page-link {
+        background-color: var(--primary);
+        color: #000;
+        border-color: var(--primary);
+        box-shadow: 0 0 10px var(--primary-glow);
+    }
+
+    .pagination-container .page-item.disabled .page-link {
+        color: var(--text-muted);
+        pointer-events: none;
+        background-color: transparent;
+        border-color: var(--border-color);
+        opacity: 0.4;
+    }
+
+    .pagination-container nav p.text-sm {
+        display: none !important; /* Hide redundant text info */
+    }
 </style>
 
 <div class="card card-danger">
@@ -198,7 +287,14 @@
                                     </button>
                                 </form>
                             @else
-                                <span style="font-size: 12px; color: var(--text-muted); font-style: italic;">Selesai</span>
+                                <form action="{{ route('admin.violations.destroy', $violation->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus riwayat pelanggaran untuk {{ $violation->student_name }}?');" style="display: inline-block;">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn-delete-history">
+                                        <i class="bi bi-trash"></i>
+                                        Hapus Riwayat
+                                    </button>
+                                </form>
                             @endif
                         </td>
                     </tr>

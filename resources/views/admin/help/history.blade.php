@@ -102,11 +102,15 @@
         background: rgba(16, 185, 129, 0.1);
         color: var(--primary);
         border: 1px solid rgba(16, 185, 129, 0.2);
-        padding: 3px 10px;
-        border-radius: 10px;
+        padding: 4px 10px;
+        border-radius: 12px;
         font-size: 11px;
         font-weight: 700;
         letter-spacing: 0.5px;
+        display: inline-flex;
+        align-items: center;
+        white-space: nowrap;
+        gap: 4px;
     }
     .search-bar {
         display: flex;
@@ -161,6 +165,74 @@
     .btn-clear-history:hover {
         background: var(--danger);
         color: #fff;
+    }
+
+    /* Premium Cyberpunk Emerald Pagination Styling */
+    .pagination-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 24px;
+        padding-top: 20px;
+        border-top: 1px solid var(--border-color);
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .pagination-container ul.pagination {
+        display: flex;
+        padding-left: 0;
+        list-style: none;
+        border-radius: var(--radius-md);
+        gap: 6px;
+        margin: 0;
+        align-items: center;
+    }
+
+    .pagination-container li.page-item {
+        margin: 0;
+    }
+
+    .pagination-container .page-link {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 36px;
+        height: 36px;
+        padding: 0 12px;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-secondary);
+        background-color: var(--bg-surface);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        text-decoration: none;
+        transition: var(--transition);
+    }
+
+    .pagination-container .page-item:hover .page-link {
+        background-color: var(--bg-base);
+        color: var(--text-primary);
+        border-color: var(--primary);
+    }
+
+    .pagination-container .page-item.active .page-link {
+        background-color: var(--primary);
+        color: #000;
+        border-color: var(--primary);
+        box-shadow: 0 0 10px var(--primary-glow);
+    }
+
+    .pagination-container .page-item.disabled .page-link {
+        color: var(--text-muted);
+        pointer-events: none;
+        background-color: transparent;
+        border-color: var(--border-color);
+        opacity: 0.4;
+    }
+
+    .pagination-container nav p.text-sm {
+        display: none !important; /* Hide redundant text info */
     }
 </style>
 
@@ -286,8 +358,13 @@
 
         {{-- Pagination --}}
         @if($histories->hasPages())
-        <div style="padding: 16px 24px; border-top: 1px solid var(--border-color); display:flex; justify-content:center;">
-            {{ $histories->links() }}
+        <div class="pagination-container" style="padding: 16px 24px;">
+            <div style="font-size: 13px; color: var(--text-secondary);">
+                Menampilkan {{ $histories->firstItem() ?? 0 }} - {{ $histories->lastItem() ?? 0 }} dari {{ $histories->total() }} riwayat
+            </div>
+            <div>
+                {{ $histories->appends(request()->query())->links('pagination::bootstrap-5') }}
+            </div>
         </div>
         @endif
     @endif

@@ -73,6 +73,11 @@
         color: var(--primary);
     }
 
+    .stat-icon.help-requests {
+        background-color: rgba(139, 92, 246, 0.1);
+        color: #a78bfa;
+    }
+
     .stat-info {
         flex-grow: 1;
     }
@@ -241,6 +246,16 @@
         <div class="stat-info">
             <div class="stat-label">Siswa Ter-Ban Aktif</div>
             <div class="stat-value" style="color: var(--danger)">{{ number_format($activeBans) }}</div>
+        </div>
+    </div>
+
+    <div class="stat-card" style="cursor: pointer;" onclick="window.location.href='{{ route('admin.help.index') }}'" title="Klik untuk membuka Pusat Bantuan Siswa">
+        <div class="stat-icon help-requests">
+            <i class="bi bi-headset"></i>
+        </div>
+        <div class="stat-info">
+            <div class="stat-label">Siswa Butuh Bantuan</div>
+            <div class="stat-value" style="color: #a78bfa;">{{ number_format($pendingHelps) }}</div>
         </div>
     </div>
 

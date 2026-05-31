@@ -168,7 +168,7 @@
         <div class="landing-card">
 
             <div class="school-logo">
-                <i class="bi bi-mortarboard-fill"></i>
+                <img src="{{ asset('assets/cbt_logo.png') }}" alt="CBT Logo" style="width: 36px; height: 36px; object-fit: contain; filter: drop-shadow(0 0 6px var(--primary));">
             </div>
 
             <h1 class="school-title">PORTAL CBT ONLINE</h1>
@@ -226,7 +226,7 @@
 
             <div class="footer-note">
                 <i class="bi bi-shield-check"></i>
-                <span>Lingkungan ujian diawasi &amp; terproteksi CBT-App v{{ \App\Models\Setting::getValue('latest_version', '4.2.4') }}</span>
+                <span>Lingkungan ujian diawasi &amp; terproteksi CBT-App</span>
             </div>
 
         </div>

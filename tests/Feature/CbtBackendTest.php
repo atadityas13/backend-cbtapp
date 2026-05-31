@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Setting;
 use App\Models\User;
+use App\Models\CbtPelanggaran;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -211,6 +212,36 @@ class CbtBackendTest extends TestCase
     }
 
     /**
+     * Test admin can update system settings successfully using new pickers formats
+     */
+    public function test_admin_can_update_system_settings_with_pickers(): void
+    {
+        $user = User::create([
+            'name' => 'Test Admin',
+            'username' => 'testadmin',
+            'password' => bcrypt('password'),
+            'role' => 'admin'
+        ]);
+
+        $response = $this->actingAs($user)->post('/admin/settings/update', [
+            'operational_start_date' => '2026-05-25T01:00', // datetime-local format
+            'operational_end_date' => '2026-06-05T23:59', // datetime-local format
+            'daily_start_time' => '07:25', // time format
+            'daily_end_time' => '18:30', // time format
+            'ad_time' => 5
+        ]);
+
+        $response->assertRedirect(route('admin.settings.index'));
+
+        $this->assertEquals('2026-05-25 01:00:00', Setting::getValue('operational_start_date'));
+        $this->assertEquals('2026-06-05 23:59:00', Setting::getValue('operational_end_date'));
+        $this->assertEquals(7, Setting::getValue('daily_start_hour'));
+        $this->assertEquals(25, Setting::getValue('daily_start_minute'));
+        $this->assertEquals(18, Setting::getValue('daily_end_hour'));
+        $this->assertEquals(30, Setting::getValue('daily_end_minute'));
+    }
+
+    /**
      * Test authenticated proctor can access settings profile page and update their own credentials
      */
     public function test_proctor_can_access_settings_and_update_profile(): void
@@ -240,5 +271,63 @@ class CbtBackendTest extends TestCase
         $this->assertEquals('Updated Proctor Name', $freshUser->name);
         $this->assertEquals('updatedproctor', $freshUser->username);
         $this->assertTrue(\Illuminate\Support\Facades\Hash::check('proctorpass123', $freshUser->password));
+    }
+
+    /**
+     * Test admin can delete unbanned violation history successfully
+     */
+    public function test_admin_can_delete_unbanned_violation_history(): void
+    {
+        $user = User::create([
+            'name' => 'Test Admin',
+            'username' => 'testadmin',
+            'password' => bcrypt('password'),
+            'role' => 'admin'
+        ]);
+
+        $violation = CbtPelanggaran::create([
+            'student_name' => 'Siswa Pelanggar',
+            'fcm_token' => 'sample_token',
+            'reason' => 'Keluar aplikasi',
+            'duration_minutes' => 15,
+            'status' => 'UNBANNED'
+        ]);
+
+        $response = $this->actingAs($user)->delete("/admin/violations/{$violation->id}");
+        $response->assertRedirect(route('admin.violations.index'));
+        
+        $this->assertDatabaseMissing('cbt_pelanggaran', [
+            'id' => $violation->id
+        ]);
+    }
+
+    /**
+     * Test admin cannot delete active banned violations
+     */
+    public function test_admin_cannot_delete_active_banned_violation(): void
+    {
+        $user = User::create([
+            'name' => 'Test Admin',
+            'username' => 'testadmin',
+            'password' => bcrypt('password'),
+            'role' => 'admin'
+        ]);
+
+        $violation = CbtPelanggaran::create([
+            'student_name' => 'Siswa Terkunci',
+            'fcm_token' => 'sample_token_2',
+            'reason' => 'Keluar aplikasi',
+            'duration_minutes' => 15,
+            'status' => 'BANNED'
+        ]);
+
+        $response = $this->actingAs($user)->delete("/admin/violations/{$violation->id}");
+        $response->assertRedirect(route('admin.violations.index'));
+        
+        // Assert that the database still has the violation
+        $this->assertDatabaseHas('cbt_pelanggaran', [
+            'id' => $violation->id,
+            'status' => 'BANNED'
+        ]);
     }
 }

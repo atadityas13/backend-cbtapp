@@ -6,6 +6,11 @@
 
 @section('content')
 <style>
+    input[type="datetime-local"],
+    input[type="time"] {
+        color-scheme: dark;
+    }
+
     .settings-grid {
         display: grid;
         grid-template-columns: 2fr 1fr;
@@ -125,11 +130,11 @@
             <div class="form-row">
                 <div class="form-group">
                     <label for="operational_start_date" class="form-label">Tanggal & Jam Mulai Operasional</label>
-                    <input type="text" name="operational_start_date" id="operational_start_date" class="form-control" value="{{ $settings['operational_start_date'] }}" placeholder="YYYY-MM-DD HH:MM:SS" required>
+                    <input type="datetime-local" name="operational_start_date" id="operational_start_date" class="form-control" value="{{ date('Y-m-d\TH:i', strtotime($settings['operational_start_date'])) }}" required>
                 </div>
                 <div class="form-group">
                     <label for="operational_end_date" class="form-label">Tanggal & Jam Selesai Operasional</label>
-                    <input type="text" name="operational_end_date" id="operational_end_date" class="form-control" value="{{ $settings['operational_end_date'] }}" placeholder="YYYY-MM-DD HH:MM:SS" required>
+                    <input type="datetime-local" name="operational_end_date" id="operational_end_date" class="form-control" value="{{ date('Y-m-d\TH:i', strtotime($settings['operational_end_date'])) }}" required>
                 </div>
             </div>
 
@@ -137,20 +142,12 @@
             <div class="form-section-title" style="margin-top: 12px;">2. Sesi Waktu Ujian Harian (WIB)</div>
             <div class="form-row">
                 <div class="form-group">
-                    <label class="form-label">Sesi Mulai (Jam : Menit)</label>
-                    <div style="display: flex; gap: 8px; align-items: center;">
-                        <input type="number" name="daily_start_hour" class="form-control" value="{{ $settings['daily_start_hour'] }}" min="0" max="23" required>
-                        <span>:</span>
-                        <input type="number" name="daily_start_minute" class="form-control" value="{{ $settings['daily_start_minute'] }}" min="0" max="59" required>
-                    </div>
+                    <label for="daily_start_time" class="form-label">Sesi Mulai (WIB)</label>
+                    <input type="time" name="daily_start_time" id="daily_start_time" class="form-control" value="{{ sprintf('%02d:%02d', $settings['daily_start_hour'], $settings['daily_start_minute']) }}" required>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Sesi Berakhir (Jam : Menit)</label>
-                    <div style="display: flex; gap: 8px; align-items: center;">
-                        <input type="number" name="daily_end_hour" class="form-control" value="{{ $settings['daily_end_hour'] }}" min="0" max="23" required>
-                        <span>:</span>
-                        <input type="number" name="daily_end_minute" class="form-control" value="{{ $settings['daily_end_minute'] }}" min="0" max="59" required>
-                    </div>
+                    <label for="daily_end_time" class="form-label">Sesi Berakhir (WIB)</label>
+                    <input type="time" name="daily_end_time" id="daily_end_time" class="form-control" value="{{ sprintf('%02d:%02d', $settings['daily_end_hour'], $settings['daily_end_minute']) }}" required>
                 </div>
             </div>
 

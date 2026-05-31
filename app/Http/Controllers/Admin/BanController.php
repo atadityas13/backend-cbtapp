@@ -203,4 +203,20 @@ class BanController extends Controller
 
         return redirect()->route('admin.violations.index')->with('success', "Akses ujian {$successCount} siswa berhasil dibuka kembali." . $fcmMessage);
     }
+
+    /**
+     * Delete a violation record (only if status is UNBANNED)
+     */
+    public function destroy($id)
+    {
+        $violation = CbtPelanggaran::findOrFail($id);
+
+        if ($violation->status !== 'UNBANNED') {
+            return redirect()->route('admin.violations.index')->with('error', 'Hanya riwayat pelanggaran yang sudah terlepas ban (UNBANNED) yang dapat dihapus.');
+        }
+
+        $violation->delete();
+
+        return redirect()->route('admin.violations.index')->with('success', 'Riwayat pelanggaran berhasil dihapus.');
+    }
 }

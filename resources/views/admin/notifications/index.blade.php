@@ -314,11 +314,11 @@
             
             <div class="preview-card">
                 <div class="preview-header">
-                    <i class="bi bi-google-play"></i>
-                    <span>GOOGLE PLAY SERVICES &bull; SEKARANG</span>
+                    <img src="{{ asset('assets/cbt_logo.png') }}" alt="CBT Logo" style="width: 14px; height: 14px; object-fit: contain; vertical-align: middle;">
+                    <span style="font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase;">CBTApp &bull; SEKARANG</span>
                 </div>
                 <div class="preview-body">
-                    <div class="preview-app-title">CBT APP SERVICES</div>
+                    <div class="preview-app-title">CBTApp</div>
                     <div class="preview-notif-title" id="previewTitle">Judul Notifikasi Baru</div>
                     <div class="preview-notif-desc" id="previewDesc">Deskripsi ringkas notifikasi yang dikirimkan oleh proktor akan muncul di sini.</div>
                     

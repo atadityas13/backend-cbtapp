@@ -89,6 +89,13 @@
             text-shadow: 0 0 10px var(--primary);
         }
 
+        .sidebar-brand img {
+            width: 32px;
+            height: 32px;
+            object-fit: contain;
+            filter: drop-shadow(0 0 6px var(--primary));
+        }
+
         .sidebar-brand-text {
             font-size: 18px;
             font-weight: 800;
@@ -578,9 +585,9 @@
 
     <!-- Sidebar Navigation -->
     <aside class="sidebar" id="sidebar">
-        <div class="sidebar-brand">
-            <i class="bi bi-shield-lock-fill"></i>
-            <div class="sidebar-brand-text">CBT PANEL <span>v4.2</span></div>
+        <div class="sidebar-brand" style="cursor: pointer;" onclick="window.location.href='{{ route('admin.dashboard') }}'">
+            <img src="{{ asset('assets/cbt_logo.png') }}" alt="CBT Logo">
+            <div class="sidebar-brand-text">CBT PANEL</div>
         </div>
         
         <ul class="sidebar-menu">
