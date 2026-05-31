@@ -274,6 +274,30 @@
     }
 </style>
 
+@php
+    $resolvedCount = \App\Models\CbtBantuanProktor::where('status', 'RESOLVED')->count();
+@endphp
+
+{{-- Tab Navigation --}}
+<div style="display:flex;gap:4px;margin-bottom:24px;background:var(--bg-surface);border:1px solid var(--border-color);border-radius:var(--radius-lg);padding:6px;">
+    <a href="{{ route('admin.help.index') }}"
+       style="flex:1;text-align:center;padding:10px 16px;border-radius:var(--radius-md);font-size:13px;font-weight:600;background:var(--primary);color:#000;box-shadow:0 0 12px var(--primary-glow);text-decoration:none;">
+        <i class="bi bi-headset me-1"></i> Antrean Aktif
+        @if($helps->count() > 0)
+            <span style="background:rgba(0,0,0,0.2);border-radius:10px;padding:1px 7px;font-size:11px;margin-left:4px;">{{ $helps->count() }}</span>
+        @endif
+    </a>
+    <a href="{{ route('admin.help.history') }}"
+       style="flex:1;text-align:center;padding:10px 16px;border-radius:var(--radius-md);font-size:13px;font-weight:600;color:var(--text-secondary);text-decoration:none;transition:var(--transition);"
+       onmouseover="this.style.background='var(--bg-base)';this.style.color='var(--text-primary)'"
+       onmouseout="this.style.background='';this.style.color='var(--text-secondary)'">
+        <i class="bi bi-clock-history me-1"></i> Riwayat Selesai
+        @if($resolvedCount > 0)
+            <span style="background:var(--primary);color:#000;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:4px;">{{ $resolvedCount }}</span>
+        @endif
+    </a>
+</div>
+
 @if(session('success'))
     <div class="alert alert-success" style="margin-bottom: 24px; padding: 16px; border-radius: var(--radius-md);">
         <i class="bi bi-check-circle-fill me-2"></i> {{ session('success') }}

@@ -50,8 +50,10 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
 
     // Manajemen Bantuan / Keluhan Siswa (Real-Time Help System)
     Route::get('/help', [\App\Http\Controllers\Admin\HelpAdminController::class, 'index'])->name('help.index');
+    Route::get('/help/history', [\App\Http\Controllers\Admin\HelpAdminController::class, 'history'])->name('help.history');
     Route::post('/help/{id}/reply', [\App\Http\Controllers\Admin\HelpAdminController::class, 'reply'])->name('help.reply');
     Route::post('/help/{id}/resolve', [\App\Http\Controllers\Admin\HelpAdminController::class, 'resolve'])->name('help.resolve');
+    Route::delete('/help/history/clear', [\App\Http\Controllers\Admin\HelpAdminController::class, 'clearHistory'])->name('help.history.clear');
  
     // Manajemen File Media (Khusus Super Admin)
     Route::middleware(['can:manage-proctors'])->group(function () {

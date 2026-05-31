@@ -149,4 +149,38 @@ class HelpAdminController extends Controller
 
         return redirect()->route('admin.help.index')->with('success', "Tiket bantuan '{$help->nama_siswa}' berhasil diselesaikan." . $fcmMessage);
     }
+
+    /**
+     * Show resolved/completed help ticket history with pagination
+     */
+    public function history(Request $request)
+    {
+        $query = CbtBantuanProktor::where('status', 'RESOLVED')
+            ->orderBy('updated_at', 'desc');
+
+        // Filter by student name if provided
+        if ($request->filled('search')) {
+            $query->where(function ($q) use ($request) {
+                $q->where('nama_siswa', 'like', '%' . $request->search . '%')
+                  ->orWhere('pesan_siswa', 'like', '%' . $request->search . '%');
+            });
+        }
+
+        $histories = $query->paginate(20)->withQueryString();
+        $totalResolved = CbtBantuanProktor::where('status', 'RESOLVED')->count();
+
+        return view('admin.help.history', compact('histories', 'totalResolved'));
+    }
+
+    /**
+     * Clear all resolved help ticket history
+     */
+    public function clearHistory()
+    {
+        $count = CbtBantuanProktor::where('status', 'RESOLVED')->count();
+        CbtBantuanProktor::where('status', 'RESOLVED')->delete();
+
+        return redirect()->route('admin.help.history')
+            ->with('success', "{$count} riwayat bantuan berhasil dihapus permanen.");
+    }
 }
