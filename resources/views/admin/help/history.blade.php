@@ -177,12 +177,6 @@
     </a>
 </div>
 
-@if(session('success'))
-    <div class="alert alert-success" style="margin-bottom: 20px; padding: 14px 18px; border-radius: var(--radius-md);">
-        <i class="bi bi-check-circle-fill me-2"></i> {{ session('success') }}
-    </div>
-@endif
-
 {{-- Search & Clear --}}
 <form method="GET" action="{{ route('admin.help.history') }}" class="search-bar">
     <input type="text" name="search" class="search-input"

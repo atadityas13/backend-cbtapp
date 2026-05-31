@@ -1,12 +1,12 @@
 <?php
- 
+
 namespace App\Http\Controllers\Api;
- 
+
 use App\Http\Controllers\Controller;
 use App\Models\CbtPelanggaran;
 use App\Models\FcmRegistration;
 use Illuminate\Http\Request;
- 
+
 class FcmController extends Controller
 {
     /**
@@ -21,17 +21,17 @@ class FcmController extends Controller
         $topic = $request->input('topic', 'cbt_notif');
         $deviceModel = trim($request->input('device_model', ''));
         $androidVersion = trim($request->input('android_version', ''));
- 
+
         if (empty($fcmToken) || empty($fullName) || empty($androidId)) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'FCM Token, Nama Lengkap, dan Android ID wajib diisi!'
             ], 400);
         }
- 
+
         // 1. Validasi Batasan Unik Android ID (1 HP = 1 Nama)
         $existingDevice = FcmRegistration::where('android_id', $androidId)->first();
- 
+
         if ($existingDevice) {
             $isUpdate = filter_var($request->input('is_update'), FILTER_VALIDATE_BOOLEAN);
 
@@ -42,13 +42,13 @@ class FcmController extends Controller
                     'message' => "Gagal: Perangkat ini sudah terdaftar atas nama: '{$existingDevice->full_name}'. Satu HP hanya boleh mendaftar 1 Nama Siswa!"
                 ], 400);
             }
- 
+
             // Jika nama sama, update token FCM (jika berubah akibat reinstall/clear data)
             // FIX: Selalu update device_model & android_version agar data lama yang NULL terisi otomatis
             $updateData = [
-                'fcm_token'       => $fcmToken,
-                'topic'           => $topic,
-                'device_model'    => !empty($deviceModel) ? $deviceModel : $existingDevice->device_model,
+                'fcm_token' => $fcmToken,
+                'topic' => $topic,
+                'device_model' => !empty($deviceModel) ? $deviceModel : $existingDevice->device_model,
                 'android_version' => !empty($androidVersion) ? $androidVersion : $existingDevice->android_version,
             ];
 
@@ -57,13 +57,13 @@ class FcmController extends Controller
             }
 
             $existingDevice->update($updateData);
- 
+
             return response()->json([
                 'status' => 'success',
                 'message' => $isUpdate ? 'Nama siswa berhasil diperbarui.' : 'Token FCM berhasil diperbarui.'
             ]);
         }
- 
+
         // 2. Auto-Migrasi: Tangani rekor lama jika android_id bernilai NULL
         $legacyToken = FcmRegistration::where('fcm_token', $fcmToken)->first();
         if ($legacyToken) {
@@ -71,21 +71,21 @@ class FcmController extends Controller
                 // Pasangkan Android ID secara sah jika rekor lama belum memilikinya
                 // FIX: Selalu sertakan device_model & android_version
                 $updateData = [
-                    'android_id'      => $androidId,
-                    'full_name'       => $fullName,
-                    'topic'           => $topic,
-                    'device_model'    => !empty($deviceModel) ? $deviceModel : $legacyToken->device_model,
+                    'android_id' => $androidId,
+                    'full_name' => $fullName,
+                    'topic' => $topic,
+                    'device_model' => !empty($deviceModel) ? $deviceModel : $legacyToken->device_model,
                     'android_version' => !empty($androidVersion) ? $androidVersion : $legacyToken->android_version,
                 ];
                 $legacyToken->update($updateData);
- 
+
                 return response()->json([
                     'status' => 'success',
                     'message' => 'Registrasi perangkat legacy berhasil dimigrasikan.'
                 ]);
             }
         }
- 
+
         // 3. Registrasi Perangkat Baru
         try {
             FcmRegistration::create([
@@ -96,7 +96,7 @@ class FcmController extends Controller
                 'device_model' => !empty($deviceModel) ? $deviceModel : null,
                 'android_version' => !empty($androidVersion) ? $androidVersion : null
             ]);
- 
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Perangkat dan nama siswa berhasil didaftarkan.'
@@ -108,7 +108,7 @@ class FcmController extends Controller
             ], 500);
         }
     }
- 
+
     /**
      * Endpoint: /api/notifikasi/check_android_id.php
      * Check if the device's Android ID is registered in the database
@@ -116,16 +116,16 @@ class FcmController extends Controller
     public function checkAndroidId(Request $request)
     {
         $androidId = trim($request->input('android_id', ''));
- 
+
         if (empty($androidId)) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'Android ID wajib dikirim!'
             ], 400);
         }
- 
+
         $registration = FcmRegistration::where('android_id', $androidId)->first();
- 
+
         if ($registration) {
             // AUTO-UPDATE: Isi device_model & android_version dari User-Agent jika masih kosong
             if (empty($registration->device_model) || empty($registration->android_version)) {
@@ -133,12 +133,12 @@ class FcmController extends Controller
                 if (!empty($userAgent) && stripos($userAgent, 'okhttp') === false && stripos($userAgent, 'curl') === false) {
                     $parsedModel = null;
                     $parsedOS = null;
-                    
+
                     // 1. Parse Versi Android (Contoh: "Android 13")
                     if (preg_match('/Android\s+([0-9\.]+)/i', $userAgent, $osMatches)) {
                         $parsedOS = "Android " . $osMatches[1];
                     }
-                    
+
                     // 2. Parse Model HP (Contoh: "SM-A536B")
                     if (preg_match('/\(([^)]+)\)/', $userAgent, $parenthesesMatches)) {
                         $parts = explode(';', $parenthesesMatches[1]);
@@ -159,7 +159,7 @@ class FcmController extends Controller
                             }
                         }
                     }
-                    
+
                     // Update field yang kosong saja
                     $updateData = [];
                     if (empty($registration->device_model) && !empty($parsedModel)) {
@@ -168,7 +168,7 @@ class FcmController extends Controller
                     if (empty($registration->android_version) && !empty($parsedOS)) {
                         $updateData['android_version'] = $parsedOS;
                     }
-                    
+
                     if (!empty($updateData)) {
                         $registration->update($updateData);
                     }
@@ -185,14 +185,14 @@ class FcmController extends Controller
                 'status' => 'registered',
                 'full_name' => $registration->full_name,
                 'points' => intval($registration->points ?? 10),
-                'alarm_muted_lifetime' => (bool)($registration->alarm_muted_lifetime ?? false),
+                'alarm_muted_lifetime' => (bool) ($registration->alarm_muted_lifetime ?? false),
                 'is_banned' => $activeBan ? true : false,
-                'is_hard_lock' => $activeBan ? (bool)($activeBan->is_hard_lock ?? false) : false,
+                'is_hard_lock' => $activeBan ? (bool) ($activeBan->is_hard_lock ?? false) : false,
                 'ban_reason' => $activeBan ? $activeBan->reason : null,
                 'ban_duration_minutes' => $activeBan ? intval($activeBan->duration_minutes) : null
             ]);
         }
- 
+
         return response()->json([
             'status' => 'not_registered'
         ]);

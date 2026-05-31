@@ -298,12 +298,6 @@
     </a>
 </div>
 
-@if(session('success'))
-    <div class="alert alert-success" style="margin-bottom: 24px; padding: 16px; border-radius: var(--radius-md);">
-        <i class="bi bi-check-circle-fill me-2"></i> {{ session('success') }}
-    </div>
-@endif
-
 <div class="card card-primary" style="margin-bottom: 24px;">
     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
         <div>
