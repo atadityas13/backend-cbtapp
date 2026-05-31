@@ -127,6 +127,54 @@ class FcmController extends Controller
         $registration = FcmRegistration::where('android_id', $androidId)->first();
  
         if ($registration) {
+            // AUTO-UPDATE: Isi device_model & android_version dari User-Agent jika masih kosong
+            if (empty($registration->device_model) || empty($registration->android_version)) {
+                $userAgent = $request->header('User-Agent', '');
+                if (!empty($userAgent) && stripos($userAgent, 'okhttp') === false && stripos($userAgent, 'curl') === false) {
+                    $parsedModel = null;
+                    $parsedOS = null;
+                    
+                    // 1. Parse Versi Android (Contoh: "Android 13")
+                    if (preg_match('/Android\s+([0-9\.]+)/i', $userAgent, $osMatches)) {
+                        $parsedOS = "Android " . $osMatches[1];
+                    }
+                    
+                    // 2. Parse Model HP (Contoh: "SM-A536B")
+                    if (preg_match('/\(([^)]+)\)/', $userAgent, $parenthesesMatches)) {
+                        $parts = explode(';', $parenthesesMatches[1]);
+                        $androidKey = -1;
+                        foreach ($parts as $key => $part) {
+                            if (stripos($part, 'Android') !== false) {
+                                $androidKey = $key;
+                                break;
+                            }
+                        }
+                        if ($androidKey !== -1 && isset($parts[$androidKey + 1])) {
+                            $modelPart = trim($parts[$androidKey + 1]);
+                            if (stripos($modelPart, 'Build/') !== false) {
+                                $modelPart = trim(explode('Build/', $modelPart)[0]);
+                            }
+                            if (!empty($modelPart) && !in_array(strtolower($modelPart), ['wv', 'u', 'ru', 'en-us'])) {
+                                $parsedModel = $modelPart;
+                            }
+                        }
+                    }
+                    
+                    // Update field yang kosong saja
+                    $updateData = [];
+                    if (empty($registration->device_model) && !empty($parsedModel)) {
+                        $updateData['device_model'] = $parsedModel;
+                    }
+                    if (empty($registration->android_version) && !empty($parsedOS)) {
+                        $updateData['android_version'] = $parsedOS;
+                    }
+                    
+                    if (!empty($updateData)) {
+                        $registration->update($updateData);
+                    }
+                }
+            }
+
             // Cek apakah ada hukuman aktif berstatus BANNED untuk perangkat ini
             $activeBan = CbtPelanggaran::where('fcm_token', $registration->fcm_token)
                 ->where('status', 'BANNED')

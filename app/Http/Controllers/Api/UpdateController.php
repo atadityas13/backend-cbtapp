@@ -35,12 +35,11 @@ class UpdateController extends Controller
             return response()->json(['error' => 'Invalid app ID for Windows platform'], 400);
         }
 
-        // ── Platform Android: skema standar ───────────────────────────────────
-        $latestVersion     = Setting::getValue('latest_version', '4.2.4');
-        $latestVersionCode = intval(Setting::getValue('latest_version_code', 7));
+        $latestVersion     = Setting::getValue('latest_version', '4.2.5');
+        $latestVersionCode = intval(Setting::getValue('latest_version_code', 8));
         $releaseNotes      = Setting::getValue(
             'release_notes',
-            "Pembaruan Sistem v4.2.4:\n\n• Perbaikan bug laporan pelanggaran dikirim 2x ke server.\n• Informasi model HP & versi Android kini tersimpan otomatis.\n• Stabilitas dan optimasi sistem."
+            "Pembaruan Sistem v4.2.5:\n\n• 🛠️ Kirim Bantuan Proktor: Siswa kini bisa mengajukan keluhan/bantuan langsung melalui tombol melayang pintar di pojok kanan bawah layar ujian.\n• 🔔 Sinyal Visual Pintar: Indikator ikon dinamis (Pending/Answered), glow ring hijau, dan badge merah notifikasi saat ada balasan baru dari proktor.\n• 🛡️ Proteksi Double-Submit: Keamanan ganda di tingkat frontend & backend untuk mencegah pengiriman jawaban ganda secara tidak sengaja.\n• 📋 Riwayat Bantuan Terpusat: Seluruh tiket bantuan yang selesai otomatis diarsipkan dan dapat dipantau di dashboard admin proktor.\n• ⚡ Smart Polling Dashboard: Sinkronisasi real-time antrean bantuan yang otomatis dijeda saat proktor sedang mengetik balasan agar penginputan tidak terganggu."
         );
 
         return response()->json([

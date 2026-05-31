@@ -42,9 +42,9 @@ class DatabaseSeeder extends Seeder
             'ad_time'                 => 3,
             // ── Setting untuk endpoint /api/check_update (Android & Windows App) ──
             'download_url'            => 'https://play.google.com/store/apps/details?id=com.mtsn11.cbtapp',
-            'latest_version'          => '4.2.3',
-            'latest_version_code'     => 6,
-            'release_notes'           => "Pembaruan Sistem v4.2.3:\n\n• Migrasi backend ke Laravel 11.\n• Web Audio API beep sintetik offline.\n• Perbaikan alur verifikasi keamanan.",
+            'latest_version'          => '4.2.5',
+            'latest_version_code'     => 8,
+            'release_notes'           => "Pembaruan Sistem v4.2.5:\n\n• 🛠️ Kirim Bantuan Proktor: Siswa kini bisa mengajukan keluhan/bantuan langsung melalui tombol melayang pintar di pojok kanan bawah layar ujian.\n• 🔔 Sinyal Visual Pintar: Indikator ikon dinamis (Pending/Answered), glow ring hijau, dan badge merah notifikasi saat ada balasan baru dari proktor.\n• 🛡️ Proteksi Double-Submit: Keamanan ganda di tingkat frontend & backend untuk mencegah pengiriman jawaban ganda secara tidak sengaja.\n• 📋 Riwayat Bantuan Terpusat: Seluruh tiket bantuan yang selesai otomatis diarsipkan dan dapat dipantau di dashboard admin proktor.\n• ⚡ Smart Polling Dashboard: Sinkronisasi real-time antrean bantuan yang otomatis dijeda saat proktor sedang mengetik balasan agar penginputan tidak terganggu.",
             'force_update'            => false,
         ];
  
