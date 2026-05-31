@@ -49,7 +49,9 @@ class BanController extends Controller
                 
                 $grouped[$identifier]->total_bans++;
                 $historyItem = clone $row;
-                $grouped[$identifier]->history[] = $historyItem;
+                $history = $grouped[$identifier]->history;
+                $history[] = $historyItem;
+                $grouped[$identifier]->history = $history;
             }
             
             // Manual pagination untuk collection hasil grouping
