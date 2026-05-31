@@ -79,7 +79,7 @@
 
         .school-logo {
             display: inline-flex;
-            width: 64px; height: 64px;
+            width: 80px; height: 80px;
             background-color: var(--primary-glow);
             border: 1.5px solid rgba(16, 185, 129, 0.3);
             border-radius: 50%;
@@ -168,7 +168,7 @@
         <div class="landing-card">
 
             <div class="school-logo">
-                <img src="{{ asset('assets/cbt_logo.png') }}" alt="CBT Logo" style="width: 36px; height: 36px; object-fit: contain; filter: drop-shadow(0 0 6px var(--primary));">
+                <img src="{{ asset('assets/cbt_logo.png') }}" alt="CBT Logo" style="width: 48px; height: 48px; object-fit: contain; filter: drop-shadow(0 0 6px var(--primary));">
             </div>
 
             <h1 class="school-title">PORTAL CBT ONLINE</h1>

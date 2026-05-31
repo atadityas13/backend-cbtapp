@@ -206,6 +206,16 @@
                 </form>
             @endif
 
+            @if($statusFilter === 'UNBANNED' && $violations->total() > 0)
+                <form action="{{ route('admin.violations.clear-unbanned') }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus SEMUA riwayat pelanggaran yang sudah dilepas?');">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn-delete-history" style="height: 38px; border-radius: var(--radius-md); padding: 8px 16px;">
+                        <i class="bi bi-trash-fill"></i> Bersihkan Semua Riwayat
+                    </button>
+                </form>
+            @endif
+
             <!-- Search input box -->
             <form action="{{ route('admin.violations.index') }}" method="GET" class="search-box">
                 <input type="hidden" name="status" value="{{ $statusFilter }}">

@@ -330,4 +330,51 @@ class CbtBackendTest extends TestCase
             'status' => 'BANNED'
         ]);
     }
+
+    /**
+     * Test admin can clear all unbanned violations successfully
+     */
+    public function test_admin_can_clear_all_unbanned_violations(): void
+    {
+        $user = User::create([
+            'name' => 'Test Admin',
+            'username' => 'testadmin',
+            'password' => bcrypt('password'),
+            'role' => 'admin'
+        ]);
+
+        CbtPelanggaran::create([
+            'student_name' => 'Siswa Pelanggar 1',
+            'fcm_token' => 'sample_token_1',
+            'reason' => 'Keluar aplikasi',
+            'duration_minutes' => 15,
+            'status' => 'UNBANNED'
+        ]);
+
+        CbtPelanggaran::create([
+            'student_name' => 'Siswa Pelanggar 2',
+            'fcm_token' => 'sample_token_2',
+            'reason' => 'Keluar aplikasi',
+            'duration_minutes' => 15,
+            'status' => 'UNBANNED'
+        ]);
+
+        $activeBan = CbtPelanggaran::create([
+            'student_name' => 'Siswa Terkunci',
+            'fcm_token' => 'sample_token_3',
+            'reason' => 'Keluar aplikasi',
+            'duration_minutes' => 15,
+            'status' => 'BANNED'
+        ]);
+
+        $response = $this->actingAs($user)->delete("/admin/violations/clear-unbanned");
+        $response->assertRedirect(route('admin.violations.index', ['status' => 'UNBANNED']));
+
+        // Assert unbanned violations are deleted
+        $this->assertDatabaseCount('cbt_pelanggaran', 1);
+        $this->assertDatabaseHas('cbt_pelanggaran', [
+            'id' => $activeBan->id,
+            'status' => 'BANNED'
+        ]);
+    }
 }

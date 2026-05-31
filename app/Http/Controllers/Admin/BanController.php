@@ -219,4 +219,15 @@ class BanController extends Controller
 
         return redirect()->route('admin.violations.index')->with('success', 'Riwayat pelanggaran berhasil dihapus.');
     }
+
+    /**
+     * Clear all UNBANNED violations from history
+     */
+    public function clearUnbanned()
+    {
+        $deletedCount = CbtPelanggaran::where('status', 'UNBANNED')->delete();
+
+        return redirect()->route('admin.violations.index', ['status' => 'UNBANNED'])
+            ->with('success', "Berhasil membersihkan {$deletedCount} riwayat pelanggaran yang sudah terlepas ban.");
+    }
 }

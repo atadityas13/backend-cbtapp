@@ -109,8 +109,8 @@
 
         .brand-logo {
             display: inline-flex;
-            width: 56px;
-            height: 56px;
+            width: 72px;
+            height: 72px;
             background-color: var(--primary-glow);
             border: 1px solid rgba(16, 185, 129, 0.3);
             border-radius: 50%;
@@ -263,7 +263,7 @@
             
             <div class="brand-section">
                 <div class="brand-logo">
-                    <img src="{{ asset('assets/cbt_logo.png') }}" alt="CBT Logo" style="width: 32px; height: 32px; object-fit: contain;">
+                    <img src="{{ asset('assets/cbt_logo.png') }}" alt="CBT Logo" style="width: 44px; height: 44px; object-fit: contain;">
                 </div>
                 <h1 class="brand-title">CBT PANEL</h1>
                 <p class="brand-subtitle">Silakan masuk menggunakan akun Proktor atau Admin Anda.</p>

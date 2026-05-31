@@ -90,8 +90,8 @@
         }
 
         .sidebar-brand img {
-            width: 32px;
-            height: 32px;
+            width: 42px;
+            height: 42px;
             object-fit: contain;
             filter: drop-shadow(0 0 6px var(--primary));
         }

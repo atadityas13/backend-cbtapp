@@ -45,6 +45,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
  
     // Halaman/Fungsi Pelanggaran
     // Hapus Riwayat Pelanggaran (Hanya jika berstatus UNBANNED)
+    Route::delete('/violations/clear-unbanned', [BanController::class, 'clearUnbanned'])->name('violations.clear-unbanned');
     Route::delete('/violations/{id}', [BanController::class, 'destroy'])->name('violations.destroy');
     Route::get('/violations', [BanController::class, 'index'])->name('violations.index');
     Route::post('/violations/{id}/unban', [BanController::class, 'unban'])->name('violations.unban');
