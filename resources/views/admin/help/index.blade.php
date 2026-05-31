@@ -408,15 +408,21 @@
     }
 
     // ──────────────────────────────────────────────
-    // PROTEKSI DOUBLE-SUBMIT
+    // PROTEKSI DOUBLE-SUBMIT (Set-based, lebih ketat)
     // ──────────────────────────────────────────────
+    const _submittedForms = new Set();
+
     function guardForm(formEl) {
         formEl.addEventListener('submit', function(e) {
-            const btn = formEl.querySelector('button[type="submit"]');
-            if (btn.disabled) {
+            // Cegah submit jika form ini sudah pernah dikirim dalam sesi ini
+            if (_submittedForms.has(formEl.id)) {
                 e.preventDefault();
-                return;
+                e.stopImmediatePropagation();
+                return false;
             }
+            // Tandai form sebagai sudah dikirim SEBELUM request berangkat
+            _submittedForms.add(formEl.id);
+            const btn = formEl.querySelector('button[type="submit"]');
             btn.disabled = true;
             btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Mengirim...';
         });

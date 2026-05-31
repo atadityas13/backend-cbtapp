@@ -42,6 +42,19 @@ class HelpAdminController extends Controller
 
         $help = CbtBantuanProktor::findOrFail($id);
 
+        // ─── IDEMPOTENCY GUARD ───────────────────────────────────────────
+        // Jika tiket ini sudah dijawab dalam 5 detik terakhir (double-submit),
+        // abaikan dan redirect tanpa proses ulang.
+        if (
+            $help->status === 'ANSWERED' &&
+            $help->updated_at &&
+            $help->updated_at->diffInSeconds(now()) <= 5
+        ) {
+            return redirect()->route('admin.help.index')
+                ->with('success', "Jawaban untuk '{$help->nama_siswa}' sudah terkirim sebelumnya.");
+        }
+        // ────────────────────────────────────────────────────────────────
+
         $help->update([
             'balasan_proktor' => $request->balasan_proktor,
             'status'          => 'ANSWERED'
